@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Artist — .HUMAN</title>
+    <meta
+      name="description"
+      content="Exhibitor profile — .HUMAN, Latent Media Lab."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=M+PLUS+1+Code:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div class="noise" aria-hidden="true"></div>
+
+    <main>
+      <section class="artist">
+        <div class="artist__inner">
+          <a href="index.html#exhibitors" class="artist__back"
+            >← 出展者一覧へ</a
+          >
+
+          <div id="artistContent" class="artist__content" hidden>
+            <h1 class="artist__name" id="artistName" lang="ja"></h1>
+
+            <p class="artist__work" id="artistWork" lang="ja"></p>
+
+            <p class="artist__bio" id="artistBio" lang="ja"></p>
+
+            <div class="social-links" id="artistSocial"></div>
+          </div>
+
+          <div id="artistNotFound" class="artist__content" hidden>
+            <p class="artist__bio" lang="ja">出展者が見つかりませんでした。</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div
+        class="footer__marquee"
+        aria-label="WHO IS FEEDING WHOM? WHAT DOES THE MACHINE CONSUME TO BECOME US? WHEN DOES THE COPY START EATING THE ORIGINAL? WHERE DOES THE HUMAN END AND THE MACHINE BEGIN? WHY DO WE KEEP FEEDING IT OURSELVES?"
+      >
+        <div class="footer__marquee-squash" aria-hidden="true">
+          <div class="footer__marquee-track">
+            <span class="footer__marquee-item">WHO IS FEEDING WHOM?</span>
+            <span class="footer__marquee-item"
+              >WHAT DOES THE MACHINE CONSUME TO BECOME US?</span
+            >
+            <span class="footer__marquee-item"
+              >WHEN DOES THE COPY START EATING THE ORIGINAL?</span
+            >
+            <span class="footer__marquee-item"
+              >WHERE DOES THE HUMAN END AND THE MACHINE BEGIN?</span
+            >
+            <span class="footer__marquee-item"
+              >WHY DO WE KEEP FEEDING IT OURSELVES?</span
+            >
+            <span class="footer__marquee-item">WHO IS FEEDING WHOM?</span>
+            <span class="footer__marquee-item"
+              >WHAT DOES THE MACHINE CONSUME TO BECOME US?</span
+            >
+            <span class="footer__marquee-item"
+              >WHEN DOES THE COPY START EATING THE ORIGINAL?</span
+            >
+            <span class="footer__marquee-item"
+              >WHERE DOES THE HUMAN END AND THE MACHINE BEGIN?</span
+            >
+            <span class="footer__marquee-item"
+              >WHY DO WE KEEP FEEDING IT OURSELVES?</span
+            >
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <script src="js/exhibitors-data.js"></script>
+    <script src="js/artist.js"></script>
+    <script src="js/script.js"></script>
+  </body>
+</html>

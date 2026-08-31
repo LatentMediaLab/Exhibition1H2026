@@ -1,0 +1,639 @@
+/* ==========================================================================
+   .HUMAN — Latent Media Lab. exhibition site
+   Black / red / Dela Gothic One, built off the exhibition poster.
+   ========================================================================== */
+
+:root {
+  --black: #000000;
+  --red: #ff0000;
+  --white: #f5f5f0;
+  --grey: #8a8a85;
+  --gap: clamp(1rem, 3vw, 2.5rem);
+  --font-display: "Dela Gothic One", sans-serif;
+  --font-body: "M PLUS 1 Code", ui-monospace, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--black);
+  color: var(--white);
+  font-family: var(--font-body);
+  overflow-x: hidden;
+}
+
+/* Dela Gothic One display type, squashed to 50% width for a condensed poster look.
+   transform-origin is "left" (not "center") because width:fit-content/inline-block
+   sizing is computed on the UNSCALED text — the paint-time transform doesn't shrink
+   the reserved layout box. Anchoring the squash to the left edge keeps the visible
+   glyphs flush with where the box actually starts, instead of drifting toward the
+   center of a box that's twice as wide as what's drawn. hero__title is exempt: it's
+   centered on purpose, and its full-width box already keeps both centers coincident. */
+.hero__venue,
+.section-heading,
+.artist__name {
+  display: inline-block;
+  transform: scaleX(0.5);
+  transform-origin: left;
+}
+
+.hero__venue,
+.section-heading,
+.artist__name {
+  display: block;
+}
+
+.hero__title {
+  /* flex + justify-content (not text-align), because text-align:center
+     clamps rather than overflowing symmetrically once inline content is
+     wider than its box — it silently stops centering the moment the
+     squashed-but-still-oversized text no longer fits. Flex centering has
+     no such clamp: the item overflows equally on both sides as intended. */
+  display: flex;
+  justify-content: center;
+  transform: scaleX(0.5);
+  transform-origin: center;
+}
+
+img,
+video {
+  display: block;
+  max-width: 100%;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* subtle film-grain noise over everything, poster-print feel */
+.noise {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 999;
+  opacity: 0.035;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ---------- hero (poster reproduction) ---------- */
+
+.hero {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.hero__title {
+  margin: 0;
+  padding: 0 var(--gap);
+  line-height: 0.82;
+  color: var(--red);
+  font-family: var(--font-display);
+  /* fallback size before js/fill-width.js measures and sets the exact
+     px value that makes the squashed glyphs span edge to edge */
+  font-size: clamp(4.5rem, 18vw, 15rem);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+/* inline-block (not plain inline) so scrollWidth is measurable in js/script.js */
+.hero__title span {
+  display: inline-block;
+}
+
+.hero__art {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 11;
+  background: var(--black);
+  overflow: hidden;
+  margin: clamp(0.75rem, 2vw, 1.5rem) 0;
+}
+
+.hero__video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: saturate(1.05) contrast(1.02);
+}
+
+.hero__scan {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.12) 0px,
+    rgba(0, 0, 0, 0.12) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  mix-blend-mode: multiply;
+  opacity: 0.35;
+}
+
+.hero__info {
+  padding: 0 var(--gap) clamp(1.5rem, 4vw, 3rem);
+  color: var(--red);
+}
+
+/* same max-width + centering as .about__inner, so hero content lines up
+   with the rest of the page's text column at wide viewports */
+.hero__info-inner {
+  max-width: 72rem;
+  margin: 0 auto;
+}
+
+.hero__dates {
+  margin: 0 0 0.2em;
+  font-size: clamp(0.95rem, 2.4vw, 1.6rem);
+  letter-spacing: -0.01em;
+}
+
+.hero__venue {
+  margin: 0;
+  width: fit-content;
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 9.5vw, 7rem);
+  line-height: 0.9;
+  letter-spacing: -0.01em;
+  overflow-wrap: break-word;
+}
+
+.hero__address {
+  margin: 1em 0 0;
+  font-size: clamp(0.7rem, 1.6vw, 1rem);
+  color: var(--red);
+}
+
+/* ---------- about ---------- */
+
+.about {
+  padding: clamp(3rem, 8vw, 6rem) var(--gap);
+}
+
+.about__inner {
+  max-width: 72rem;
+  margin: 0 auto;
+}
+
+.about__text {
+  margin: 0 0 1.5rem;
+  font-weight: 400;
+  font-size: clamp(1.1rem, 2.6vw, 1.8rem);
+  line-height: 1.55;
+  color: var(--white);
+}
+
+.about__text:last-child {
+  margin-bottom: 0;
+}
+
+.about__text .accent {
+  color: var(--red);
+  font-family: var(--font-display);
+}
+
+/* ---------- guest talk ---------- */
+
+.guest {
+  padding: clamp(3rem, 8vw, 6rem) var(--gap);
+  border-top: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.guest__inner {
+  max-width: 72rem;
+  margin: 0 auto;
+}
+
+/* title/name (+ links) on the left, a portrait photo top-right stretched to
+   match the full height of the text column — heading stacked above body,
+   both in a single left column, with the photo spanning both rows */
+.guest__grid {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    "heading photo"
+    "body    photo";
+  column-gap: clamp(1.5rem, 4vw, 3rem);
+  row-gap: clamp(1.5rem, 4vw, 2.5rem);
+  align-items: stretch;
+}
+
+.guest__heading {
+  grid-area: heading;
+}
+
+.guest__name-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.5rem;
+}
+
+.guest__photo {
+  grid-area: photo;
+  aspect-ratio: 3 / 4;
+  width: 100%;
+  max-width: 25rem;
+  height: 100%;
+  justify-self: end;
+  align-self: start;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  overflow: hidden;
+  background: #0a0a0a;
+}
+
+.guest__photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: grayscale(1) contrast(1.05);
+}
+
+.guest__body {
+  grid-area: body;
+}
+
+.guest__name {
+  font-family: var(--font-body);
+  font-weight: 700;
+  color: var(--white);
+  font-size: clamp(1.4rem, 3.2vw, 2rem);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.guest__name-reading {
+  font-weight: 400;
+  color: var(--grey);
+  font-size: 0.6em;
+  margin-left: 0.4em;
+}
+
+.guest__role {
+  margin: 0.4rem 0 1.5rem;
+  color: var(--red);
+  font-size: 0.95rem;
+}
+
+.guest__bio,
+.guest__desc {
+  margin: 0 0 1.25rem;
+  font-size: 0.95rem;
+  line-height: 1.75;
+  color: var(--white);
+}
+
+.guest__desc {
+  color: var(--grey);
+}
+
+.schedule {
+  width: 100%;
+  max-width: 32rem;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  font-size: 0.85rem;
+}
+
+.schedule th,
+.schedule td {
+  text-align: left;
+  padding: 0.6em 1em 0.6em 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.schedule th {
+  color: var(--red);
+  font-weight: 500;
+}
+
+.social-links {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.social-links__item {
+  border: 1px solid var(--red);
+  border-radius: 999px;
+  color: var(--red);
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+  padding: 0.5em 1.1em;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.social-links__item:hover {
+  background: var(--red);
+  color: var(--black);
+}
+
+/* ---------- exhibitors ---------- */
+
+.exhibitors {
+  padding: clamp(3rem, 8vw, 6rem) var(--gap);
+  border-top: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.exhibitors__inner {
+  max-width: 72rem;
+  margin: 0 auto;
+}
+
+.section-heading {
+  width: fit-content;
+  font-family: var(--font-display);
+  color: var(--red);
+  font-size: clamp(2.2rem, 7vw, 4.5rem);
+  margin: 0 0 2.5rem;
+  line-height: 1;
+}
+
+.exhibitor-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 3rem;
+}
+
+.exhibitor-card {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  padding: 1.1rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+  color: var(--white);
+  transition:
+    color 0.15s ease,
+    padding-left 0.15s ease;
+}
+
+.exhibitor-card:hover {
+  color: var(--red);
+  padding-left: 0.5rem;
+}
+
+.exhibitor-card__name {
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.exhibitor-card__work {
+  color: var(--grey);
+  font-size: 0.8rem;
+}
+
+/* ---------- footer (visit info + closing marquee) ---------- */
+
+.footer {
+  padding-top: clamp(3rem, 8vw, 6rem);
+}
+
+.footer__inner {
+  max-width: 72rem;
+  margin: 0 auto;
+}
+
+/* a full-width map on top, the info blocks in a single row beneath it */
+.footer__layout {
+  display: block;
+}
+
+/* break out of .footer__inner's max-width to bleed full viewport width,
+   regardless of how deep this sits inside centered containers */
+.footer__map {
+  width: 100vw;
+  margin-left: 50%;
+  transform: translateX(-50%);
+  aspect-ratio: 3 / 1;
+  border-top: 1px solid rgba(255, 255, 255, 0.25);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+  overflow: hidden;
+  background: #0a0a0a;
+  margin-bottom: clamp(2rem, 5vw, 3rem);
+}
+
+.footer__map iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+/* columns size to their own content and space-between distributes the
+   leftover width evenly, instead of stretching to 1fr with a fixed gap */
+.footer__grid {
+  display: grid;
+  grid-template-columns: repeat(4, auto);
+  justify-content: space-between;
+  row-gap: 2.5rem;
+}
+
+.footer__block h3 {
+  margin: 0 0 0.6rem;
+  font-size: 0.85rem;
+  color: var(--red);
+  letter-spacing: 0.05em;
+}
+
+.footer__block h3.footer__block-sub {
+  margin-top: 1.25rem;
+}
+
+.footer__block p {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--white);
+}
+
+.footer__logo {
+  max-width: 9rem;
+  height: auto;
+}
+
+/* the closing .human — a looping marquee of questions, same visual size
+   as .hero__title (synced by js/script.js), with the same kind of open
+   vertical margin the hero gives its own title */
+.footer__marquee {
+  padding: clamp(2rem, 6vw, 4rem) 0;
+  overflow: hidden;
+  width: 100%;
+}
+
+/* on artist.html the marquee is the footer's only content (no visit grid
+   above it) — .footer already supplies the top padding, so drop the extra */
+.footer__marquee:first-child {
+  margin-top: 0;
+  border-top: 0;
+}
+
+.footer__marquee-squash {
+  display: block;
+  transform: scaleX(0.5);
+  transform-origin: left;
+}
+
+.footer__marquee-track {
+  display: flex;
+  align-items: baseline;
+  width: max-content;
+  animation: footer-marquee 240s linear infinite;
+}
+
+@keyframes footer-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.footer__marquee-item {
+  font-family: var(--font-display);
+  color: var(--red);
+  line-height: 1;
+  white-space: nowrap;
+  margin-right: 0.5em;
+  /* fallback before js/script.js syncs this to half of .hero__title's
+     solved size — half of .hero__title's own pre-JS fallback, so
+     artist.html (which has no hero title to sync from) still lands
+     at a comparable scale */
+  font-size: clamp(2.25rem, 9vw, 7.5rem);
+}
+
+/* ---------- artist detail page ---------- */
+
+.artist {
+  padding: clamp(6rem, 12vw, 9rem) var(--gap) clamp(5rem, 10vw, 8rem);
+  min-height: 100vh;
+}
+
+.artist__inner {
+  max-width: 48rem;
+  margin: 0 auto;
+}
+
+.artist__back {
+  display: inline-block;
+  color: var(--grey);
+  font-size: 0.85rem;
+  margin-bottom: 2.5rem;
+  transition: color 0.15s ease;
+}
+
+.artist__back:hover {
+  color: var(--red);
+}
+
+.artist__name {
+  width: fit-content;
+  font-family: var(--font-display);
+  color: var(--red);
+  font-size: clamp(2rem, 6vw, 3.5rem);
+  line-height: 1.3;
+  margin: 0 0 0.6rem;
+}
+
+.artist__work {
+  color: var(--grey);
+  font-size: 1rem;
+  margin: 0 0 2.5rem;
+}
+
+.artist__bio {
+  font-size: 1rem;
+  line-height: 1.75;
+  color: var(--white);
+  max-width: 40rem;
+  margin: 0 0 1.5rem;
+}
+
+/* ---------- reveal-on-scroll ---------- */
+
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity 0.7s ease,
+    transform 0.7s ease;
+}
+
+.reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ---------- responsive ---------- */
+
+@media (max-width: 720px) {
+  .hero__title {
+    white-space: normal;
+  }
+
+  .footer__map {
+    aspect-ratio: 16 / 9;
+  }
+
+  .footer__grid {
+    grid-template-columns: repeat(2, auto);
+  }
+
+  .guest__grid {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "heading"
+      "photo"
+      "body";
+  }
+
+  /* stacked single-column: size the photo by width, not by matching the
+     heading block's height, since they're no longer side by side */
+  .guest__photo {
+    height: auto;
+    width: 60%;
+    justify-self: start;
+  }
+
+  .guest__name-row {
+    justify-content: flex-start;
+  }
+
+  .exhibitor-list {
+    grid-template-columns: 1fr;
+  }
+
+  .schedule {
+    display: block;
+    overflow-x: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero__venue {
+    font-size: clamp(1.4rem, 12vw, 3rem);
+  }
+}
+
+@media (max-width: 420px) {
+  .footer__grid {
+    grid-template-columns: 1fr;
+  }
+}
