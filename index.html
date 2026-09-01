@@ -172,90 +172,18 @@
       <section id="exhibitors" class="exhibitors">
         <div class="exhibitors__inner">
           <h2 class="section-heading">EXHIBITORS</h2>
-
-          <ul class="exhibitor-list">
-            <li>
-              <a class="exhibitor-card" href="artist.html?id=artist-01">
-                <span class="exhibitor-card__name"> 田中 優貴</span>
-                <span class="exhibitor-card__work" lang="ja"
-                  >無題 — ミクストメディア</span
-                >
-              </a>
-            </li>
-            <li>
-              <a class="exhibitor-card" href="artist.html?id=artist-02">
-                <span class="exhibitor-card__name" lang="ja">長谷川 凛汰</span>
-                <span class="exhibitor-card__work" lang="ja"
-                  >無題 — ミクストメディア</span
-                >
-              </a>
-            </li>
-            <li>
-              <a class="exhibitor-card" href="artist.html?id=artist-03">
-                <span class="exhibitor-card__name">富永 真翔</span>
-                <span class="exhibitor-card__work" lang="ja"
-                  >無題 — ミクストメディア</span
-                >
-              </a>
-            </li>
-            <li>
-              <a class="exhibitor-card" href="artist.html?id=artist-04">
-                <span class="exhibitor-card__name" lang="ja">莉山 (A)</span>
-                <span class="exhibitor-card__work" lang="ja"
-                  >人物X — インスタレーション</span
-                >
-              </a>
-            </li>
-            <li>
-              <a class="exhibitor-card" href="artist.html?id=artist-05">
-                <span class="exhibitor-card__name">Kazuki Fukuyo</span>
-                <span class="exhibitor-card__work" lang="ja"
-                  >無題 — ミクストメディア</span
-                >
-              </a>
-            </li>
-            <li>
-              <a class="exhibitor-card" href="artist.html?id=artist-06">
-                <span class="exhibitor-card__name">Rui</span>
-                <span class="exhibitor-card__work" lang="ja"
-                  >無題 — ミクストメディア</span
-                >
-              </a>
-            </li>
-            <li>
-              <a class="exhibitor-card" href="artist.html?id=artist-07">
-                <span class="exhibitor-card__name">imechiumaya</span>
-                <span class="exhibitor-card__work" lang="ja"
-                  >無題 — ミクストメディア</span
-                >
-              </a>
-            </li>
-            <li>
-              <a class="exhibitor-card" href="artist.html?id=artist-08">
-                <span class="exhibitor-card__name">soshi yoshida</span>
-                <span class="exhibitor-card__work" lang="ja"
-                  >無題 — ミクストメディア</span
-                >
-              </a>
-            </li>
-            <li>
-              <a class="exhibitor-card" href="artist.html?id=artist-09">
-                <span class="exhibitor-card__name">TANDA</span>
-                <span class="exhibitor-card__work" lang="ja"
-                  >無題 — ミクストメディア</span
-                >
-              </a>
-            </li>
-            <li>
-              <a class="exhibitor-card" href="artist.html?id=artist-10">
-                <span class="exhibitor-card__name">Scott Allen</span>
-                <span class="exhibitor-card__work" lang="ja"
-                  >無題 — ミクストメディア</span
-                >
-              </a>
-            </li>
-          </ul>
         </div>
+
+        <!-- a sibling of .exhibitors__inner (not nested in it) so its drag/
+             float bounds span the full section width, not just the inner
+             column — same full-bleed pattern as .footer__marquee below
+             .footer__inner. Populated from EXHIBITORS by js/exhibitor-web.js:
+             names float and drift, connected by lines to their nearest
+             neighbors. Falls back to a plain wrapped list under
+             prefers-reduced-motion (see .exhibitor-web in css/style.css) —
+             that fallback still reads as part of this section visually
+             thanks to shared padding, even though it's not in .exhibitors__inner. -->
+        <ul class="exhibitor-web" id="exhibitorWeb"></ul>
       </section>
 
       <section id="footer" class="footer">
@@ -343,6 +271,8 @@
       </section>
     </main>
 
+    <script src="js/exhibitors-data.js"></script>
+    <script src="js/exhibitor-web.js"></script>
     <script src="js/script.js"></script>
   </body>
 </html>

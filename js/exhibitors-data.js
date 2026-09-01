@@ -47,7 +47,6 @@ var EXHIBITORS = [
     bio: "作家ステートメント準備中。",
     photo:
       "https://media.kyoto-seika.ac.jp/latentmedia/wp-content/uploads/2026/03/DSC01482-%E5%AF%8C%E6%B0%B8%E7%9C%9F%E7%BF%94224T114-scaled.jpg",
-    social: { web: "#", x: "#", instagram: "#" },
   },
   {
     id: "artist-04",
@@ -85,7 +84,6 @@ var EXHIBITORS = [
     bio: "作家ステートメント準備中。",
     photo:
       "https://media.kyoto-seika.ac.jp/latentmedia/wp-content/uploads/2026/04/IMG_2105-224t143_%E7%A6%8F%E4%B8%8E%E4%B8%80%E5%96%9C.jpeg",
-    social: { web: "#", x: "#", instagram: "#" },
   },
   {
     id: "artist-06",
