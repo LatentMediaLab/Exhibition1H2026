@@ -1,5 +1,22 @@
 // Renders a single exhibitor's profile on artist.html from the ?id= query param.
 
+// Converts a youtu.be / youtube.com/watch link into its embeddable form.
+// Returns null for anything else so callers can fall back to a static thumb.
+function getYouTubeEmbedUrl(url) {
+  try {
+    const parsed = new URL(url);
+    if (parsed.hostname === "youtu.be") {
+      return `https://www.youtube.com/embed${parsed.pathname}`;
+    }
+    if (parsed.hostname.endsWith("youtube.com") && parsed.searchParams.has("v")) {
+      return `https://www.youtube.com/embed/${parsed.searchParams.get("v")}`;
+    }
+  } catch (e) {
+    // not a valid URL — fall through to null
+  }
+  return null;
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   const id = new URLSearchParams(window.location.search).get("id");
   const artist = window.EXHIBITORS ? EXHIBITORS.find((a) => a.id === id) : null;
@@ -41,7 +58,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const thumb = document.createElement("div");
       thumb.className = "past-works__thumb";
-      if (work.image) {
+      const embedUrl = work.url && getYouTubeEmbedUrl(work.url);
+      if (embedUrl) {
+        const iframe = document.createElement("iframe");
+        iframe.src = embedUrl;
+        iframe.title = work.title;
+        iframe.loading = "lazy";
+        iframe.allow =
+          "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
+        iframe.allowFullscreen = true;
+        thumb.appendChild(iframe);
+      } else if (work.image) {
         const img = document.createElement("img");
         img.src = work.image;
         img.alt = work.title;
@@ -75,6 +102,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const link = document.createElement("a");
     link.href = url;
     link.className = "social-links__item";
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
     link.textContent = labels[key];
     socialContainer.appendChild(link);
   });

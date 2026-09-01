@@ -9,6 +9,10 @@
   --white: #f5f5f0;
   --grey: #8a8a85;
   --gap: clamp(1rem, 3vw, 2.5rem);
+  /* Dela Gothic One ships in ONE weight (400). Always pair this with
+     font-weight: 400 — heading tags default to bold, and with no real 700
+     face the browser fakes it by stroking the outline, which reads as an
+     unwanted outline on the glyphs. */
   --font-display: "Dela Gothic One", sans-serif;
   --font-body: "M PLUS 1 Code", ui-monospace, monospace;
 }
@@ -58,7 +62,7 @@ body {
      no such clamp: the item overflows equally on both sides as intended. */
   display: flex;
   justify-content: center;
-  transform: scaleX(0.5);
+  transform: scaleX(0.5) translateY(-0.025em);
   transform-origin: center;
 }
 
@@ -99,6 +103,11 @@ a {
   line-height: 0.82;
   color: var(--red);
   font-family: var(--font-display);
+  /* Dela Gothic One only ships weight 400 (see :root), so this is a
+     deliberate synthetic/pseudo bold — the browser fakes 700 by stroking
+     the outline. Intentional here for extra weight on the poster title;
+     everywhere else in this file the same face is pinned to 400 to avoid it. */
+  font-weight: 700;
   /* fallback size before js/fill-width.js measures and sets the exact
      px value that makes the squashed glyphs span edge to edge */
   font-size: clamp(4.5rem, 18vw, 15rem);
@@ -164,6 +173,7 @@ a {
   margin: 0;
   width: fit-content;
   font-family: var(--font-display);
+  font-weight: 400;
   font-size: clamp(1.8rem, 9.5vw, 7rem);
   line-height: 0.9;
   letter-spacing: -0.01em;
@@ -199,9 +209,23 @@ a {
   margin-bottom: 0;
 }
 
+/* squashed like the other display type. Sitting inline in running text, the
+   transform halves what's painted but leaves the full-width layout box
+   behind — a visible hole mid-sentence. ".HUMAN" in Dela Gothic One measures
+   5.045em, so pulling the following text back by half that (2.5225em) closes
+   the gap exactly, at any font-size. Re-measure if this string ever changes
+   (including if the synthetic-bold weight below shifts the glyph width). */
 .about__text .accent {
+  display: inline-block;
   color: var(--red);
   font-family: var(--font-display);
+  /* deliberate pseudo bold — see .hero__title for why this deviates from
+     the font-weight: 400 pin used everywhere else in this file */
+  font-weight: 700;
+  font-size: 1.25em;
+  transform: scaleX(0.5) translateY(0.075em);
+  transform-origin: left;
+  margin-right: -2.5225em;
 }
 
 /* ---------- guest talk ---------- */
@@ -302,7 +326,6 @@ a {
 
 .schedule {
   width: 100%;
-  max-width: 32rem;
   border-collapse: collapse;
   margin: 1.5rem 0;
   font-size: 0.85rem;
@@ -358,6 +381,7 @@ a {
 .section-heading {
   width: fit-content;
   font-family: var(--font-display);
+  font-weight: 400;
   color: var(--red);
   font-size: clamp(2.2rem, 7vw, 4.5rem);
   margin: 0 0 2.5rem;
@@ -393,6 +417,11 @@ a {
 .exhibitor-card__name {
   font-weight: 500;
   flex-shrink: 0;
+  /* fixed width (not content width) so .exhibitor-card__work starts at the
+     same x position on every row regardless of name length — font-body is
+     monospace, so ch is a reliable unit here. Sized to fit the longest name,
+     "Kazuki Fukuyo" / "soshi yoshida" (13 characters), plus breathing room. */
+  min-width: 14ch;
 }
 
 .exhibitor-card__work {
@@ -472,7 +501,7 @@ a {
    as .hero__title (synced by js/script.js), with the same kind of open
    vertical margin the hero gives its own title */
 .footer__marquee {
-  padding: clamp(2rem, 6vw, 4rem) 0;
+  padding: 0 var(--gap);
   overflow: hidden;
   width: 100%;
 }
@@ -508,6 +537,7 @@ a {
 
 .footer__marquee-item {
   font-family: var(--font-display);
+  font-weight: 400;
   color: var(--red);
   line-height: 1;
   white-space: nowrap;
@@ -546,6 +576,7 @@ a {
 .artist__name {
   width: fit-content;
   font-family: var(--font-display);
+  font-weight: 400;
   color: var(--red);
   font-size: clamp(2rem, 6vw, 3.5rem);
   line-height: 1.3;
@@ -581,13 +612,9 @@ a {
 }
 
 /* name left, social links pushed right on the same line — same as
-   .guest__name-row in the guest section.
-   Grid rather than flex: .artist__name is squashed with scaleX(0.5), so its
-   layout box stays twice as wide as the glyphs actually drawn. Flex would
-   measure that phantom width and wrap the links onto their own line; a 1fr
-   track sizes to the space left over instead, keeping them on the name's
-   line. nowrap + min-width:0 let that track be narrower than the unsquashed
-   text without breaking the name across lines. */
+   .guest__name-row in the guest section. Grid (1fr auto) rather than flex so
+   a long name shrinks its own track instead of bumping the links to their
+   own line. */
 .artist__name-row {
   display: grid;
   grid-template-columns: 1fr auto;
@@ -601,8 +628,11 @@ a {
    glyphs half that margin above the links */
 .artist__name-row .artist__name {
   min-width: 0;
-  white-space: nowrap;
   margin-bottom: 0;
+  /* squashed again, so the layout box is twice the glyphs actually drawn:
+     nowrap stops the name breaking across lines on metrics that no longer
+     match what's painted — at half width it always fits its track */
+  white-space: nowrap;
 }
 
 .artist__photo {
@@ -669,6 +699,12 @@ a {
   height: 100%;
   object-fit: cover;
   filter: grayscale(1) contrast(1.05);
+}
+
+.past-works__thumb iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
 }
 
 .past-works__caption {

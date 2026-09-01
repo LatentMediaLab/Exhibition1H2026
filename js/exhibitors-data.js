@@ -16,11 +16,6 @@ var EXHIBITORS = [
     bio: "作家ステートメント準備中。",
     photo:
       "https://media.kyoto-seika.ac.jp/latentmedia/wp-content/uploads/2026/03/DSC2705-scaled.jpg",
-    pastWorks: [
-      { title: "無題 I", year: "2025", medium: "映像インスタレーション" },
-      { title: "無題 II", year: "2024", medium: "ジェネラティブ・イメージ" },
-      { title: "無題 III", year: "2024", medium: "サウンド" },
-    ],
     social: { instagram: "https://instagram.com/yu_ki.exe" },
   },
   {
@@ -32,11 +27,17 @@ var EXHIBITORS = [
     photo:
       "https://media.kyoto-seika.ac.jp/latentmedia/wp-content/uploads/2026/03/DSC26672.jpg",
     pastWorks: [
-      { title: "無題 I", year: "2025", medium: "映像インスタレーション" },
-      { title: "無題 II", year: "2024", medium: "ジェネラティブ・イメージ" },
-      { title: "無題 III", year: "2024", medium: "サウンド" },
+      {
+        title: "Resistance レジスタンス",
+        year: "2025",
+        medium: "インスタレーション",
+        url: "https://youtu.be/LZCLtD1d8W8",
+      },
     ],
-    social: { web: "#", x: "#", instagram: "#" },
+    social: {
+      youtube:
+        "https://www.youtube.com/playlist?list=PLDB8HCkUv0tirmnpNrkhbf081XXOTnKmx",
+    },
   },
   {
     id: "artist-03",
@@ -46,11 +47,6 @@ var EXHIBITORS = [
     bio: "作家ステートメント準備中。",
     photo:
       "https://media.kyoto-seika.ac.jp/latentmedia/wp-content/uploads/2026/03/DSC01482-%E5%AF%8C%E6%B0%B8%E7%9C%9F%E7%BF%94224T114-scaled.jpg",
-    pastWorks: [
-      { title: "無題 I", year: "2026", medium: "映像インスタレーション" },
-      { title: "無題 II", year: "2024", medium: "ジェネラティブ・イメージ" },
-      { title: "無題 III", year: "2024", medium: "サウンド" },
-    ],
     social: { web: "#", x: "#", instagram: "#" },
   },
   {
@@ -60,10 +56,20 @@ var EXHIBITORS = [
     genre: "インスタレーション",
     bio: "作家ステートメント準備中。",
     photo:
-      "https://media.kyoto-seika.ac.jp/latentmedia/wp-content/uploads/2026/03/AZHAN2026-04.gif",
+      "https://media.kyoto-seika.ac.jp/latentmedia/wp-content/uploads/2026/03/AZHAN2026-04.jpg",
     pastWorks: [
-      { title: "Tuhan 神", year: "2026", medium: "インスタレーション" },
-      { title: "離れていく", year: "2026", medium: "インスタレーション" },
+      {
+        title: "Tuhan 神",
+        year: "2026",
+        medium: "インスタレーション",
+        url: "https://youtu.be/xEqdHaLwNmA",
+      },
+      {
+        title: "離れていく",
+        year: "2026",
+        medium: "インスタレーション",
+        url: "https://youtu.be/pVvXyHu8RCY",
+      },
     ],
     social: {
       web: "https://03080.jp",
@@ -79,11 +85,6 @@ var EXHIBITORS = [
     bio: "作家ステートメント準備中。",
     photo:
       "https://media.kyoto-seika.ac.jp/latentmedia/wp-content/uploads/2026/04/IMG_2105-224t143_%E7%A6%8F%E4%B8%8E%E4%B8%80%E5%96%9C.jpeg",
-    pastWorks: [
-      { title: "無題 I", year: "2025", medium: "映像インスタレーション" },
-      { title: "無題 II", year: "2024", medium: "ジェネラティブ・イメージ" },
-      { title: "無題 III", year: "2024", medium: "サウンド" },
-    ],
     social: { web: "#", x: "#", instagram: "#" },
   },
   {
@@ -94,11 +95,6 @@ var EXHIBITORS = [
     bio: "作家ステートメント準備中。",
     photo:
       "https://media.kyoto-seika.ac.jp/latentmedia/wp-content/uploads/2026/03/IMG_8341-224T159%E6%9D%BE%E6%B0%B8%E3%81%BE%E3%81%AA%E3%81%BF.jpeg",
-    pastWorks: [
-      { title: "無題 I", year: "2025", medium: "映像インスタレーション" },
-      { title: "無題 II", year: "2024", medium: "ジェネラティブ・イメージ" },
-      { title: "無題 III", year: "2024", medium: "サウンド" },
-    ],
     social: {
       x: "https://x.com/Tokage_Thunder",
     },
@@ -111,11 +107,6 @@ var EXHIBITORS = [
     bio: "作家ステートメント準備中。",
     photo:
       "https://media.kyoto-seika.ac.jp/latentmedia/wp-content/uploads/2026/03/imechiumaya_artistpicture.png",
-    pastWorks: [
-      { title: "無題 I", year: "2025", medium: "映像インスタレーション" },
-      { title: "無題 II", year: "2024", medium: "ジェネラティブ・イメージ" },
-      { title: "無題 III", year: "2024", medium: "サウンド" },
-    ],
     social: {
       youtube: "https://youtube.com/@imechiumaya",
       instagram: "https://instagram.com/imechiumaya",
@@ -129,14 +120,9 @@ var EXHIBITORS = [
     bio: "作家ステートメント準備中。",
     photo:
       "https://media.kyoto-seika.ac.jp/latentmedia/wp-content/uploads/2026/03/soshi_Face_white-224T186%E5%90%89%E7%94%B0%E5%A3%AE%E5%BF%97.png",
-    pastWorks: [
-      { title: "無題 I", year: "2025", medium: "映像インスタレーション" },
-      { title: "無題 II", year: "2024", medium: "ジェネラティブ・イメージ" },
-      { title: "無題 III", year: "2024", medium: "サウンド" },
-    ],
     social: {
-      web: "https://soshigod.github.io/portfolio/",
-      instagram: "https://instagram.com/soshigod_/",
+      web: "https://soshigod.github.io/portfolio",
+      instagram: "https://instagram.com/soshigod_",
     },
   },
   {
@@ -150,7 +136,6 @@ var EXHIBITORS = [
     pastWorks: [
       { title: "無題 I", year: "2025", medium: "映像インスタレーション" },
       { title: "無題 II", year: "2024", medium: "ジェネラティブ・イメージ" },
-      { title: "無題 III", year: "2024", medium: "サウンド" },
     ],
     social: {
       tiktok: "https://www.tiktok.com/@panier597",
@@ -168,12 +153,11 @@ var EXHIBITORS = [
     pastWorks: [
       { title: "無題 I", year: "2025", medium: "映像インスタレーション" },
       { title: "無題 II", year: "2024", medium: "ジェネラティブ・イメージ" },
-      { title: "無題 III", year: "2024", medium: "サウンド" },
     ],
     social: {
-      web: "https://scottallen.ws/",
+      web: "https://scottallen.ws",
       x: "https://x.com/Scott_Allen__",
-      instagram: "https://instagram.com/scott_allen___/",
+      instagram: "https://instagram.com/scott_allen___",
     },
   },
 ];

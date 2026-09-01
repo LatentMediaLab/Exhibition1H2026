@@ -32,13 +32,32 @@ function fitSquashedTitles() {
 
 // Keeps the closing marquee's question text at half the hero title's
 // visual size, reading the size fitSquashedTitles() just solved for it.
+// artist.html has no real .hero__title to read from, so it builds an
+// offscreen probe that reuses the exact same markup/CSS/fit logic — the
+// marquee then solves to the same size index.html's would at this viewport.
 function syncMarqueeSize() {
-  const heroTitle = document.querySelector(".hero__title");
-  if (!heroTitle) return;
+  let heroTitle = document.querySelector(".hero__title");
+  let probe = null;
+
+  if (!heroTitle) {
+    probe = document.createElement("h1");
+    probe.className = "hero__title";
+    probe.style.cssText =
+      "position:absolute;visibility:hidden;width:100vw;left:0;top:0;";
+    const span = document.createElement("span");
+    span.textContent = ".HUMAN";
+    probe.appendChild(span);
+    document.body.appendChild(probe);
+    fitSquashedTitles();
+    heroTitle = probe;
+  }
+
   const heroFontSize = parseFloat(getComputedStyle(heroTitle).fontSize);
   document.querySelectorAll(".footer__marquee-item").forEach((el) => {
     el.style.fontSize = heroFontSize / 2 + "px";
   });
+
+  if (probe) probe.remove();
 }
 
 // Scrolls to the hash the page was opened with (stashed by the inline script
