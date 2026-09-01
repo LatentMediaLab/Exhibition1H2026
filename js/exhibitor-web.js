@@ -1,10 +1,11 @@
 // Floating "web" of exhibitor names on index.html, built from EXHIBITORS
 // (js/exhibitors-data.js). Each name drifts on its own, gently repelling the
 // others so labels don't overlap, and is linked by a redrawn-every-frame
-// line to its nearest neighbors — a constellation rather than a fixed graph,
-// so the web stays intact as names float apart and back together. artist-10
-// (Scott Allen) is pinned near the container's center as the cluster's hub,
-// with a spoke drawn to every other node in addition to its nearest ones.
+// line to its nearest neighbors — a star-constellation mesh rather than a
+// fixed graph or a hub-and-spoke pattern, so the web stays intact (every
+// node always has at least NEIGHBORS edges, from its own nearest-neighbor
+// search) as names float apart and back together, with no single node
+// required to anchor the rest.
 // Any name can be picked up and dragged; releasing it eases it back to
 // wherever it was floating from before it was grabbed.
 //
@@ -19,7 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // hiragana/katakana (U+3040-30FF) + CJK ideographs (U+3400-9FFF)
   const JP_RE = /[぀-ヿ㐀-鿿]/;
-  const HUB_ID = "artist-10"; // Scott Allen
+  const NO_WRAP_ID = "artist-04"; // 莉山 (A) — has a space too, but stays on one line
 
   const nodes = EXHIBITORS.map((artist) => {
     const li = document.createElement("li");
@@ -28,7 +29,29 @@ document.addEventListener("DOMContentLoaded", () => {
     const link = document.createElement("a");
     link.className = "exhibitor-web__link";
     link.href = `artist.html?id=${artist.id}`;
-    link.textContent = artist.name.trim();
+    const trimmedName = artist.name.trim();
+    // on mobile, names with a space break to two lines instead of shrinking
+    // to fit — see .exhibitor-web__link--breakable in css/style.css. A <br>
+    // forces the break regardless of white-space, unlike a plain space,
+    // which the absolutely-positioned (shrink-to-fit) link never actually
+    // wraps at — nothing narrows it enough to make that happen on its own.
+    // Always inserted; css/style.css hides it (display: none) outside the
+    // mobile media query so desktop stays one line and it responds live to
+    // resizing rather than being fixed by whatever width the page loaded at.
+    if (trimmedName.includes(" ") && artist.id !== NO_WRAP_ID) {
+      const spaceAt = trimmedName.indexOf(" ");
+      // the space stays on the first part (not discarded) so desktop, where
+      // .exhibitor-web__break is display: none, still reads as one
+      // normally-spaced line instead of the two halves running together
+      const first = trimmedName.slice(0, spaceAt + 1);
+      const rest = trimmedName.slice(spaceAt + 1);
+      const br = document.createElement("br");
+      br.className = "exhibitor-web__break";
+      link.append(first, br, rest);
+      link.classList.add("exhibitor-web__link--breakable");
+    } else {
+      link.textContent = trimmedName;
+    }
     // links are natively draggable (browser drag-to-bookmark/drag-to-tab);
     // that gesture competes with our own pointer-drag below and can hijack
     // it mid-move, so it's switched off in favor of our custom handling
@@ -51,14 +74,11 @@ document.addEventListener("DOMContentLoaded", () => {
       returning: false,
       returnX: 0,
       returnY: 0,
-      isHub: artist.id === HUB_ID,
     };
   });
 
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   if (!nodes.length) return;
-
-  const hubIndex = nodes.findIndex((n) => n.isHub);
 
   container.classList.add("exhibitor-web--live");
 
@@ -68,17 +88,16 @@ document.addEventListener("DOMContentLoaded", () => {
   svg.setAttribute("aria-hidden", "true");
   container.insertBefore(svg, container.firstChild);
 
-  // Nearest-neighbor edges (plus one hub spoke per node) are recomputed
-  // every frame, so lines (and their paired gradients) are reused
-  // (repositioned/hidden) rather than created and destroyed each tick.
-  // Sized for the worst case: every node gets a hub spoke and NEIGHBORS
-  // nearest-edges, before dedup.
+  // Nearest-neighbor edges are recomputed every frame, so lines (and their
+  // paired gradients) are reused (repositioned/hidden) rather than created
+  // and destroyed each tick. Sized for the worst case: every node gets
+  // NEIGHBORS edges to itself, before dedup.
   const NEIGHBORS = 2;
   const defs = document.createElementNS(svgNS, "defs");
   svg.appendChild(defs);
 
   let gradientUid = 0;
-  const lines = Array.from({ length: nodes.length * (NEIGHBORS + 1) }, () => {
+  const lines = Array.from({ length: nodes.length * NEIGHBORS }, () => {
     const gradient = document.createElementNS(svgNS, "linearGradient");
     gradient.id = `exhibitor-web-line-${gradientUid++}`;
     gradient.setAttribute("gradientUnits", "userSpaceOnUse");
@@ -103,7 +122,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // weighted so the pure red shows up most often and maroon is the rarest.
   const LINE_COLORS = [
     { color: "#ff0000", weight: 4 }, // red
-    { color: "#ff6666", weight: 3 }, // light red
+    { color: "#fa8072", weight: 3 }, // salmon red
     { color: "#cc0000", weight: 2 }, // dark red
     { color: "#660000", weight: 1 }, // maroon
   ];
@@ -148,16 +167,10 @@ document.addEventListener("DOMContentLoaded", () => {
       const maxX = Math.max(rect.width - n.w, 0);
       const maxY = Math.max(rect.height - n.h, 0);
       if (!n.placed) {
-        if (n.isHub) {
-          // the hub starts dead center of the full section; everyone else
-          // starts scattered within the narrower .exhibitors__inner column
-          n.x = maxX / 2;
-          n.y = maxY / 2;
-        } else {
-          const spawnMaxX = Math.max(spawnWidth - n.w, 0);
-          n.x = Math.min(spawnLeft + Math.random() * spawnMaxX, maxX);
-          n.y = Math.random() * maxY;
-        }
+        // starts scattered within the narrower .exhibitors__inner column
+        const spawnMaxX = Math.max(spawnWidth - n.w, 0);
+        n.x = Math.min(spawnLeft + Math.random() * spawnMaxX, maxX);
+        n.y = Math.random() * maxY;
         n.placed = true;
       } else if (!n.dragging) {
         n.x = Math.min(n.x, maxX);
@@ -170,8 +183,6 @@ document.addEventListener("DOMContentLoaded", () => {
   window.addEventListener("resize", measure);
 
   const WANDER = 0.06; // random per-frame nudge, keeps the drift from ever fully settling
-  const HUB_WANDER_SCALE = 0.3; // the hub jitters less — it's an anchor, not a drifter
-  const HUB_STRENGTH = 0.015; // spring pulling the hub back toward center
   // Return spring is deliberately underdamped — it overshoots the target by
   // ~28%, swings back past it the other way, then settles in well under a
   // second: two clear bounces, not the slow, heavily-damped glide the
@@ -206,20 +217,12 @@ document.addEventListener("DOMContentLoaded", () => {
         } else {
           n.vx += dx * RETURN_STRENGTH;
           n.vy += dy * RETURN_STRENGTH;
-          return; // no wander/hub-centering while easing back home
+          return; // no wander while easing back home
         }
       }
 
-      const wanderScale = n.isHub ? HUB_WANDER_SCALE : 1;
-      n.vx += (Math.random() - 0.5) * WANDER * wanderScale;
-      n.vy += (Math.random() - 0.5) * WANDER * wanderScale;
-
-      if (n.isHub) {
-        const cx = rect.width / 2 - n.w / 2;
-        const cy = rect.height / 2 - n.h / 2;
-        n.vx += (cx - n.x) * HUB_STRENGTH;
-        n.vy += (cy - n.y) * HUB_STRENGTH;
-      }
+      n.vx += (Math.random() - 0.5) * WANDER;
+      n.vy += (Math.random() - 0.5) * WANDER;
     });
 
     for (let i = 0; i < nodes.length; i++) {
@@ -280,14 +283,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const edges = new Set();
     const addEdge = (i, j) => edges.add(i < j ? `${i}-${j}` : `${j}-${i}`);
 
-    // the hub gets a permanent spoke to every other node, on top of the
-    // organic nearest-neighbor mesh below (duplicates just dedupe via the Set)
-    if (hubIndex !== -1) {
-      centers.forEach((_, i) => {
-        if (i !== hubIndex) addEdge(hubIndex, i);
-      });
-    }
-
+    // every node connects to its own NEIGHBORS nearest others — no fixed
+    // hub, but every node is guaranteed at least NEIGHBORS edges this way,
+    // so nothing ever ends up floating with no connection at all
     centers.forEach((c, i) => {
       centers
         .map((other, j) => ({

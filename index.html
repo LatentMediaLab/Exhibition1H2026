@@ -60,10 +60,14 @@
         <div class="hero__info">
           <div class="hero__info-inner">
             <p class="hero__dates">
-              Latent Media Lab.
-              2026.09/18&nbsp;FRI&nbsp;–&nbsp;2026.09/20&nbsp;SUN
+              <span class="hero__dates-org">Latent Media Lab.</span>
+              <span class="hero__dates-range"
+                >2026.09/18&nbsp;FRI&nbsp;–&nbsp;2026.09/20&nbsp;SUN</span
+              >
             </p>
-            <h2 class="hero__venue">GALLERY&nbsp;METABO</h2>
+            <h2 class="hero__venue" aria-label="GALLERY METABO">
+              <span aria-hidden="true">GALLERY&nbsp;METABO</span>
+            </h2>
             <p class="hero__address">
               〒606-8392 京都市左京区聖護院山王町18 メタボ岡崎
             </p>
@@ -89,11 +93,10 @@
             <div class="guest__heading">
               <h2 class="section-heading">GUEST TALK</h2>
               <div class="guest__name-row">
-                <h3 class="guest__name" lang="ja">
-                  緒方壽人<span class="guest__name-reading"
-                    >（おがた ひさと）</span
-                  >
-                </h3>
+                <div class="guest__name-identity">
+                  <h3 class="guest__name" lang="ja">緒方壽人</h3>
+                  <span class="guest__name-reading">(おがた ひさと)</span>
+                </div>
                 <div class="social-links">
                   <a
                     href="https://takram.com/ja/people/hisato-ogata"
@@ -142,7 +145,15 @@
                 今回の展示では学生の出展作品を対象としたゲストトーク・質疑応答の後、緒方氏による公開講評を行います。テクノロジーと人間、その「ちょうどいい距離感」を考える時間になればと思います。
               </p>
 
+              <!-- inside .guest__body (not a sibling of .guest__grid): on
+                   desktop that keeps it confined to the text column next to
+                   .guest__photo; on mobile .guest__body already spans the
+                   full row, so the table does too without any extra rule -->
               <table class="schedule">
+                <colgroup>
+                  <col class="schedule__col-time" />
+                  <col />
+                </colgroup>
                 <thead>
                   <tr>
                     <th lang="ja">時間</th>

@@ -1,17 +1,21 @@
 // .HUMAN — exhibition site interactions
 
+// Matches css/style.css's @media (max-width: 720px) mobile breakpoint.
+const MOBILE_BREAKPOINT = 720;
+
 // Sizes a squashed (scaleX 0.5) Dela Gothic One headline so its visible glyphs
 // span exactly the element's own content-box width, edge to edge. transform
 // scales paint only, not layout, so a CSS font-size formula can't account for
 // it — this measures the text's true natural (pre-squash) width at a known
 // reference size and solves for the font-size that makes the squashed result
-// fit. Targets .hero__title, which holds an inner aria-hidden span with the
-// literal text.
+// fit. Targets .hero__title (always) and .hero__venue (mobile only — on
+// desktop its fixed-content-width clamp() is the intended look), which each
+// hold an inner aria-hidden span with the literal text.
 function fitSquashedTitles() {
   const squashFactor = 0.5;
   const refSize = 100; // px, arbitrary stable reference for measuring the ratio
 
-  document.querySelectorAll(".hero__title").forEach((el) => {
+  function fit(el) {
     const span = el.querySelector("span");
     if (!span) return;
 
@@ -27,14 +31,28 @@ function fitSquashedTitles() {
     const naturalWidthPerPx = naturalWidthAtRef / refSize;
     const desiredNaturalWidth = containerWidth / squashFactor;
     el.style.fontSize = desiredNaturalWidth / naturalWidthPerPx + "px";
+  }
+
+  document.querySelectorAll(".hero__title").forEach(fit);
+
+  const isMobile = window.innerWidth <= MOBILE_BREAKPOINT;
+  document.querySelectorAll(".hero__venue").forEach((el) => {
+    if (isMobile) {
+      fit(el);
+    } else {
+      el.style.fontSize = ""; // desktop: let the CSS clamp() take back over
+    }
   });
 }
 
-// Keeps the closing marquee's question text at half the hero title's
+// Keeps the closing marquee's question text sized off the hero title's
 // visual size, reading the size fitSquashedTitles() just solved for it.
 // artist.html has no real .hero__title to read from, so it builds an
 // offscreen probe that reuses the exact same markup/CSS/fit logic — the
 // marquee then solves to the same size index.html's would at this viewport.
+// Desktop halves it for hierarchy under the hero title; mobile matches it
+// 1:1 — the hero title itself is already much smaller there, so halving it
+// again read as too small.
 function syncMarqueeSize() {
   let heroTitle = document.querySelector(".hero__title");
   let probe = null;
@@ -53,8 +71,9 @@ function syncMarqueeSize() {
   }
 
   const heroFontSize = parseFloat(getComputedStyle(heroTitle).fontSize);
+  const scale = window.innerWidth <= MOBILE_BREAKPOINT ? 1 : 0.5;
   document.querySelectorAll(".footer__marquee-item").forEach((el) => {
-    el.style.fontSize = heroFontSize / 2 + "px";
+    el.style.fontSize = heroFontSize * scale + "px";
   });
 
   if (probe) probe.remove();

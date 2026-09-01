@@ -130,6 +130,13 @@ a {
 }
 
 .hero__video {
+  /* absolute + inset (not width/height:100%): a replaced element's
+     percentage height doesn't reliably resolve against a flex-grown
+     parent's height (mobile's .hero__art) — it falls back to sizing from
+     the video's own intrinsic aspect ratio instead. inset:0 against
+     .hero__art's position:relative isn't subject to that ambiguity. */
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -169,6 +176,15 @@ a {
   letter-spacing: -0.01em;
 }
 
+/* each half stays on one line; the only breakable space is the regular one
+   between these two spans, so a wrap (e.g. on mobile) lands there — not
+   inside the date range itself, where the &nbsp;-joined words already
+   resist breaking at the spaces but an en dash can still break right after it */
+.hero__dates-org,
+.hero__dates-range {
+  white-space: nowrap;
+}
+
 .hero__venue {
   margin: 0;
   width: fit-content;
@@ -178,6 +194,11 @@ a {
   line-height: 0.9;
   letter-spacing: -0.01em;
   overflow-wrap: break-word;
+}
+
+/* inline-block (not plain inline) so scrollWidth is measurable in js/script.js */
+.hero__venue span {
+  display: inline-block;
 }
 
 .hero__address {
@@ -258,12 +279,27 @@ a {
   grid-area: heading;
 }
 
+/* half of .section-heading's own 2.5rem — scoped to guest only, Exhibitors
+   and the artist page keep the full amount */
+.guest__heading .section-heading {
+  margin-bottom: 1.25rem;
+}
+
 .guest__name-row {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 0.75rem 1.5rem;
+}
+
+/* groups the name with its furigana so name-row's space-between still just
+   sees two items (this group vs .social-links) — also what mobile unwraps
+   (display: contents) to place the name and reading in separate rows */
+.guest__name-identity {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
 }
 
 .guest__photo {
@@ -274,7 +310,6 @@ a {
   height: 100%;
   justify-self: end;
   align-self: start;
-  border: 1px solid rgba(255, 255, 255, 0.3);
   overflow: hidden;
   background: #0a0a0a;
 }
@@ -302,7 +337,12 @@ a {
 .guest__name-reading {
   font-weight: 400;
   color: var(--grey);
-  font-size: 0.6em;
+  /* fixed clamp, not em: since .guest__name-identity's display: contents
+     unwrap (mobile) sits this as a sibling of .guest__name rather than a
+     descendant, "em" here resolves against the inherited base size, not
+     .guest__name's — a fixed size that tracks the same clamp() inputs
+     keeps it proportional to the name regardless of which context is active */
+  font-size: clamp(1rem, 2.4vw, 1.5rem);
   margin-left: 0.4em;
 }
 
@@ -326,9 +366,22 @@ a {
 
 .schedule {
   width: 100%;
+  /* auto layout only sizes columns to their own content, which for short
+     times/labels like these falls well short of 100% — fixed (together
+     with .schedule__col-time below) makes the declared width actually
+     apply, instead of leaving unclaimed space (and no border-bottom) past
+     wherever the content-sized columns happened to end */
+  table-layout: fixed;
   border-collapse: collapse;
-  margin: 1.5rem 0;
+  margin: 1.5rem 0 0;
   font-size: 0.85rem;
+}
+
+/* percentage width on td/th themselves doesn't reliably drive fixed-layout
+   column sizing across browsers — a <colgroup> col is what the table
+   layout algorithm actually sizes columns from */
+.schedule__col-time {
+  width: 50%;
 }
 
 .schedule th,
@@ -369,11 +422,22 @@ a {
 /* ---------- exhibitors ---------- */
 
 .exhibitors {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
   padding: clamp(3rem, 8vw, 6rem) var(--gap);
   border-top: 1px solid rgba(255, 255, 255, 0.25);
 }
 
 .exhibitors__inner {
+  /* explicit 100% (not the implicit auto every other __inner wrapper relies
+     on): .exhibitors is a flex column now (for .exhibitor-web's flex-grow,
+     see below), and a flex item with auto width AND auto margins resolves
+     to fit-content instead of filling the line — margin:auto disables
+     stretch per spec, leaving only the heading's own (transform-widened)
+     layout width to size against, off-center and too narrow. An explicit
+     width sidesteps that resolution entirely, flex item or not. */
+  width: 100%;
   max-width: 72rem;
   margin: 0 auto;
 }
@@ -399,6 +463,11 @@ a {
   display: flex;
   flex-wrap: wrap;
   gap: 1rem clamp(1.5rem, 4vw, 3rem);
+  /* fills whatever height .exhibitors's own min-height: 100vh leaves after
+     the heading, instead of sizing off its own content or a fixed clamp()
+     — same technique as .hero__art, and for the same reason: a fixed
+     figure tuned for one screen is wrong on every other */
+  flex: 1 1 auto;
 }
 
 .exhibitor-web__link {
@@ -412,16 +481,24 @@ a {
   transition: color 0.15s ease;
 }
 
+/* desktop: names with a space stay one line — the <br> js/exhibitor-web.js
+   always inserts for these is switched on only in the mobile media query */
+.exhibitor-web__break {
+  display: none;
+}
+
 .exhibitor-web__link:hover,
 .exhibitor-web__link:focus-visible {
   color: var(--red);
 }
 
 /* enhanced mode (js/exhibitor-web.js): a bounded box the names float
-   around inside, each positioned via transform: translate() every frame */
+   around inside, each positioned via transform: translate() every frame.
+   Height comes from .exhibitor-web's own flex-grow above; min-height is
+   just a floor for pathologically short viewports. */
 .exhibitor-web--live {
   position: relative;
-  height: clamp(22rem, 65vh, 38rem);
+  min-height: 18rem;
   overflow: hidden;
 }
 
@@ -462,7 +539,10 @@ a {
 /* ---------- footer (visit info + closing marquee) ---------- */
 
 .footer {
-  padding-top: clamp(3rem, 8vw, 6rem);
+  /* horizontal inset for everything in the section — .footer__map opts out
+     of it deliberately (see its own comment) via a viewport-relative bleed,
+     not by escaping this padding */
+  padding: clamp(3rem, 8vw, 6rem) var(--gap) 0;
 }
 
 .footer__inner {
@@ -532,9 +612,13 @@ a {
    as .hero__title (synced by js/script.js), with the same kind of open
    vertical margin the hero gives its own title */
 .footer__marquee {
-  padding: 0 var(--gap);
+  /* deliberately bleeds past .footer's own horizontal padding — same
+     viewport-relative technique as .footer__map, so it reaches both edges
+     regardless of how deep this sits inside centered/padded containers */
+  width: 100vw;
+  margin-left: 50%;
+  transform: translateX(-50%);
   overflow: hidden;
-  width: 100%;
 }
 
 /* on artist.html the marquee is the footer's only content (no visit grid
@@ -573,10 +657,10 @@ a {
   line-height: 1;
   white-space: nowrap;
   margin-right: 0.5em;
-  /* fallback before js/script.js syncs this to half of .hero__title's
-     solved size — half of .hero__title's own pre-JS fallback, so
-     artist.html (which has no hero title to sync from) still lands
-     at a comparable scale */
+  /* fallback before js/script.js syncs this to a fraction of .hero__title's
+     solved size (see syncMarqueeSize) — roughly that same fraction of
+     .hero__title's own pre-JS fallback, so artist.html (which has no hero
+     title to sync from) still lands at a comparable scale */
   font-size: clamp(2.25rem, 9vw, 7.5rem);
 }
 
@@ -671,7 +755,6 @@ a {
   aspect-ratio: 3 / 4;
   width: 100%;
   justify-self: end;
-  border: 1px solid rgba(255, 255, 255, 0.3);
   overflow: hidden;
   background: #0a0a0a;
 }
@@ -713,7 +796,6 @@ a {
 .past-works__thumb {
   aspect-ratio: 16 / 9;
   width: 100%;
-  border: 1px solid rgba(255, 255, 255, 0.25);
   overflow: hidden;
   /* placeholder hatching until a real image is dropped in */
   background: repeating-linear-gradient(
@@ -763,8 +845,46 @@ a {
 /* ---------- responsive ---------- */
 
 @media (max-width: 720px) {
+  /* a hair over 100vh: .about (right after .hero) starts just below the
+     fold instead of right at it, with no sub-pixel risk of it peeking into
+     view. .hero__venue still lands on-screen comfortably, since
+     .hero__info's own bottom padding — not extra height here — is what
+     separates it from that fold. See .hero__art below, which is what
+     actually grows to reach this height. */
+  .hero {
+    min-height: 101vh;
+  }
+
+  /* fills whatever vertical space .hero's title/info don't need, instead of
+     sizing itself off its own aspect-ratio — that's what lets .hero reliably
+     reach the min-height above across different device heights, rather than
+     a fixed px/vh figure tuned for one screen and wrong on every other. */
+  .hero__art {
+    flex: 1 1 auto;
+    aspect-ratio: auto;
+    min-height: 12rem;
+  }
+
   .hero__title {
     white-space: normal;
+  }
+
+  /* mobile only: GALLERY METABO gets the same edge-to-edge treatment as
+     .hero__title (js/script.js), instead of desktop's fixed-content-width
+     clamp() — width:fit-content there would just track the content, so it
+     needs to become a normal filling block for the fit math to work against */
+  .hero__venue {
+    width: auto;
+    white-space: nowrap;
+  }
+
+  /* the back-link's own clamp(6rem,...) top padding is sized for the
+     desktop page (nothing else sits above it there); at mobile widths it
+     resolves to its 6rem floor, which reads as a big dead gap before any
+     content starts. Scaled down to something proportionate to how little
+     is above it. */
+  .artist {
+    padding-top: clamp(2rem, 6vw, 4rem);
   }
 
   .artist__intro {
@@ -774,53 +894,158 @@ a {
       "text";
   }
 
-  /* not enough room beside the name at this width — drop the links below */
+  /* keeps the desktop 1fr auto (name left, links right) — only the extra
+     bottom margin is mobile-specific here */
   .artist__name-row {
-    grid-template-columns: 1fr;
-    justify-items: start;
+    /* was the small gap (0.6rem) before .artist__work; swapped with
+       .artist__work's own margin below so the name/SNS block reads as
+       clearly separate from the work/statement block that follows it */
+    margin-bottom: 2.5rem;
   }
 
+  .artist__work {
+    /* was 2.5rem — now the small gap, so this sits with the statement
+       it's describing instead of with the name/SNS block above it */
+    margin-bottom: 0.6rem;
+  }
+
+  /* full-bleed via negative margins that exactly cancel .artist's own
+     padding (unlike .footer__map's 100vw+transform trick, this doesn't
+     depend on the containing block being centered on the viewport — it
+     just widens by the padding it's canceling, which holds regardless of
+     how the grid track itself resolves). Height is fixed (not aspect-ratio)
+     so widening to the full viewport doesn't also grow it taller — it
+     deliberately turns the old 13rem-wide 3:4 portrait crop into a wide
+     landscape strip of the same height. */
   .artist__photo {
-    max-width: 13rem;
-    justify-self: start;
+    width: calc(100% + 2 * var(--gap));
+    max-width: none;
+    height: calc(13rem * 4 / 3);
+    aspect-ratio: auto;
+    margin-left: calc(-1 * var(--gap));
+    justify-self: stretch;
+  }
+
+  /* same full-bleed technique, same reasoning: height pinned to what the
+     old, padding-inset 16:9 box would have computed to, so going edge to
+     edge makes it wider without also making it taller. */
+  .past-works__thumb {
+    width: calc(100% + 2 * var(--gap));
+    aspect-ratio: auto;
+    height: calc((100vw - 2 * var(--gap)) * 9 / 16);
+    margin-left: calc(-1 * var(--gap));
   }
 
   .footer__map {
     aspect-ratio: 16 / 9;
   }
 
+  /* space-between alone has no floor — with only 2 columns left, and each
+     block's content often wide enough to leave little slack, it can push
+     them almost flush together. An explicit column-gap guarantees a gap
+     regardless of how wide either column's content happens to be. */
   .footer__grid {
     grid-template-columns: repeat(2, auto);
+    column-gap: clamp(1.5rem, 4vw, 3rem);
   }
 
+  /* .guest__heading bundles title+name-row+role, and .guest__name-row /
+     .guest__name-identity each bundle two more things — unwrapped here so
+     every piece becomes an individually placeable item of .guest__grid
+     below, instead of moving as three fixed chunks. */
+  .guest__heading,
+  .guest__name-row,
+  .guest__name-identity {
+    display: contents;
+  }
+
+  /* GUEST TALK > photo > name+role > furigana+social > everything else */
   .guest__grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr auto;
     grid-template-areas:
-      "heading"
-      "photo"
-      "body";
+      "title title"
+      "photo photo"
+      "name role"
+      "reading social"
+      "body body";
+    row-gap: 0.75rem;
   }
 
-  /* stacked single-column: size the photo by width, not by matching the
-     heading block's height, since they're no longer side by side */
+  .guest__grid .section-heading {
+    grid-area: title;
+  }
+
+  /* full-bleed: same technique as .artist__photo — negative margins cancel
+     .guest's own padding, and a fixed height (not aspect-ratio) means going
+     edge to edge widens it without also making it taller. Height is pinned
+     to what the old width:60%/aspect-ratio:3:4 box would have computed to,
+     turning that portrait crop into a wide landscape strip instead. */
   .guest__photo {
-    height: auto;
-    width: 60%;
-    justify-self: start;
+    grid-area: photo;
+    width: calc(100% + 2 * var(--gap));
+    max-width: none;
+    height: calc(0.8 * (100vw - 2 * var(--gap)));
+    aspect-ratio: auto;
+    margin-left: calc(-1 * var(--gap));
+    justify-self: stretch;
+    align-self: auto;
   }
 
-  .guest__name-row {
-    justify-content: flex-start;
+  /* row 1 (name/role) end-aligned, row 2 (reading/social) start-aligned:
+     .guest__name's line-height makes row 1 taller than .guest__role's own
+     text, and .social-links' pill buttons make row 2 taller than
+     .guest__name-reading's own text — bottom-aligning the short item in
+     row 1 and top-aligning the short item in row 2 puts both pairs flush
+     against the row-gap between them from either side, instead of one of
+     them floating away from it inside its own taller row */
+  .guest__name,
+  .guest__role {
+    align-self: center;
   }
 
-  .exhibitor-web--live {
-    height: clamp(18rem, 70vh, 28rem);
+  .guest__role {
+    grid-area: role;
+    margin: 0;
+    justify-self: end;
   }
 
-  .schedule {
-    display: block;
-    overflow-x: auto;
+  .guest__name-reading {
+    grid-area: reading;
+    margin-left: 0;
+    align-self: start;
+    /* a size step down from the desktop-tuned clamp() above — its own row
+       here rather than sitting inline next to the name, so it doesn't need
+       to carry as much size to read clearly */
+    font-size: 0.875rem;
   }
+
+  .guest__grid .social-links {
+    grid-area: social;
+    justify-self: end;
+    align-self: start;
+  }
+
+  .guest__body {
+    grid-area: body;
+  }
+
+  /* names with a space break to two lines here (js/exhibitor-web.js always
+     inserts a <br>; .exhibitor-web__break above hides it outside this query,
+     this turns it back on), skipping 莉山 (A) per its own exception even
+     though its name also has a space. Centered since the two lines are
+     rarely equal width. */
+  .exhibitor-web__break {
+    display: inline;
+  }
+
+  .exhibitor-web__link--breakable {
+    text-align: center;
+  }
+
+  /* removed: display: block; overflow-x: auto — that took the table out
+     of table display entirely, silently disabling table-layout: fixed and
+     the <colgroup> column widths above. table-layout: fixed already
+     guarantees this can't overflow its container regardless. */
 }
 
 @media (max-width: 480px) {
