@@ -41,15 +41,38 @@ function syncMarqueeSize() {
   });
 }
 
+// Scrolls to the hash the page was opened with (stashed by the inline script
+// in <head>, which strips it so the browser can't jump early). Called only
+// once layout has settled — fonts loaded and the hero title resized — so the
+// target is at its final position and doesn't drift out from under the user.
+function scrollToInitialHash() {
+  const hash = window.__initialHash;
+  if (!hash) return;
+  window.__initialHash = null;
+
+  const target = document.querySelector(hash);
+  if (!target) return;
+
+  history.replaceState(null, "", hash);
+  // "instant", not "auto" — auto defers to the page's scroll-behavior:smooth,
+  // which animates from the top and reads as the very jump we're fixing
+  target.scrollIntoView({ behavior: "instant", block: "start" });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   const runFit = () => {
     fitSquashedTitles();
     syncMarqueeSize();
   };
   if (document.fonts && document.fonts.ready) {
-    document.fonts.ready.then(runFit);
+    document.fonts.ready.then(() => {
+      runFit();
+      // one frame later, so the resized hero has been laid out
+      requestAnimationFrame(scrollToInitialHash);
+    });
   } else {
     runFit();
+    requestAnimationFrame(scrollToInitialHash);
   }
 
   let resizeTimer;

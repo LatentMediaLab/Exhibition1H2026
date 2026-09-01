@@ -27,13 +27,25 @@
           >
 
           <div id="artistContent" class="artist__content" hidden>
-            <h1 class="artist__name" id="artistName" lang="ja"></h1>
+            <div class="artist__intro">
+              <div class="artist__intro-text">
+                <div class="artist__name-row">
+                  <h1 class="artist__name" id="artistName" lang="ja"></h1>
+                  <div class="social-links" id="artistSocial"></div>
+                </div>
 
-            <p class="artist__work" id="artistWork" lang="ja"></p>
+                <p class="artist__work" id="artistWork" lang="ja"></p>
 
-            <p class="artist__bio" id="artistBio" lang="ja"></p>
+                <p class="artist__bio" id="artistBio" lang="ja"></p>
+              </div>
 
-            <div class="social-links" id="artistSocial"></div>
+              <div class="artist__photo" id="artistPhoto"></div>
+            </div>
+
+            <section class="past-works">
+              <h2 class="past-works__heading" lang="ja">過去作品</h2>
+              <ul class="past-works__list" id="artistPastWorks"></ul>
+            </section>
           </div>
 
           <div id="artistNotFound" class="artist__content" hidden>

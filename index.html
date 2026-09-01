@@ -2,6 +2,22 @@
 <html lang="ja">
   <head>
     <meta charset="UTF-8" />
+    <script>
+      /* Runs before first paint. The hero title's size is solved in JS after
+         document.fonts.ready, which shifts everything below it — so the
+         browser's own early jump to #hash lands on a position that's about to
+         become wrong. Stash the hash and strip it here so that jump never
+         happens; js/script.js scrolls there once layout has settled. */
+      (function () {
+        if ("scrollRestoration" in history) {
+          history.scrollRestoration = "manual";
+        }
+        if (location.hash) {
+          window.__initialHash = location.hash;
+          history.replaceState(null, "", location.pathname + location.search);
+        }
+      })();
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>.HUMAN — Latent Media Lab.</title>
     <meta
@@ -78,9 +94,19 @@
                   >
                 </h3>
                 <div class="social-links">
-                  <a href="#" class="social-links__item">Web</a>
-                  <a href="#" class="social-links__item">X</a>
-                  <a href="#" class="social-links__item">Instagram</a>
+                  <a
+                    href="https://takram.com/ja/people/hisato-ogata"
+                    class="social-links__item"
+                    >WEB</a
+                  >
+                  <a href="https://x.com/ogatahisato" class="social-links__item"
+                    >X</a
+                  >
+                  <a
+                    href="https://instagram.com/hisato"
+                    class="social-links__item"
+                    >INSTAGRAM</a
+                  >
                 </div>
               </div>
               <p class="guest__role" lang="ja">Takram デザインエンジニア</p>
@@ -95,13 +121,16 @@
 
             <div class="guest__body">
               <p class="guest__bio" lang="ja">
-                デザイン・エンジニアリング・アートを横断しながら活動するデザインエンジニア。「HAKUTO」月面探査ローバー意匠設計、21_21
-                DESIGN
-                SIGHT「アスリート展」ディレクション、2025年大阪・関西万博シグネチャーパビリオンの展示ディレクションなど幅広く手がける。著書に『コンヴィヴィアル・テクノロジー』。
+                デザイン、エンジニアリング、アート、サイエンスまで幅広く領域横断的な活動を行うデザインエンジニア。東京大学工学部卒業後、国際情報科学芸術アカデミー(IAMAS)、LEADING
+                EDGE
+                DESIGNを経て、Takramに参加。主なプロジェクトは、「HAKUTO」月面探査ローバーの意匠コンセプト立案とスタイリング、21_21
+                DESIGN SIGHT「アスリート展」展覧会ディレクター、SKINCARE LOUNGE
+                by
+                ORBISのブランディングと体験デザイン、2025大阪・関西万博シグネチャーパビリオン「いのち動的平衡館」展示ディレクターなど。2015年よりグッドデザイン賞審査員。近著に『コンヴィヴィアル・テクノロジー』。21年から長野県の御代田町に移住し、テクノロジーと人間と自然のちょうどよいバランスを考える日々。
               </p>
 
               <p class="guest__desc" lang="ja">
-                今回の展示では、学生の出展作品を対象とした公開講評ののち、緒方氏によるゲストトーク・質疑応答を行います。テクノロジーと人間、その「ちょうどいい距離感」を考える時間になればと思います。
+                今回の展示では学生の出展作品を対象としたゲストトーク・質疑応答の後、緒方氏による公開講評を行います。テクノロジーと人間、その「ちょうどいい距離感」を考える時間になればと思います。
               </p>
 
               <table class="schedule">
@@ -138,7 +167,7 @@
           <ul class="exhibitor-list">
             <li>
               <a class="exhibitor-card" href="artist.html?id=artist-01">
-                <span class="exhibitor-card__name">Yuki Tanaka</span>
+                <span class="exhibitor-card__name"> 田中 優貴</span>
                 <span class="exhibitor-card__work" lang="ja"
                   >無題 — ミクストメディア</span
                 >
@@ -154,7 +183,7 @@
             </li>
             <li>
               <a class="exhibitor-card" href="artist.html?id=artist-03">
-                <span class="exhibitor-card__name">Manato Tominaga</span>
+                <span class="exhibitor-card__name">富永 真翔</span>
                 <span class="exhibitor-card__work" lang="ja"
                   >無題 — ミクストメディア</span
                 >
@@ -164,7 +193,7 @@
               <a class="exhibitor-card" href="artist.html?id=artist-04">
                 <span class="exhibitor-card__name" lang="ja">莉山 (A)</span>
                 <span class="exhibitor-card__work" lang="ja"
-                  >無題 — ミクストメディア</span
+                  >人物X — インスタレーション</span
                 >
               </a>
             </li>
