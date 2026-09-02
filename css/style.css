@@ -88,6 +88,64 @@ a {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
+/* ---------- loading screen ---------- */
+
+.loading-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--black);
+  transition:
+    opacity 0.4s ease,
+    visibility 0.4s ease;
+}
+
+.loading-screen__mark {
+  /* squashed to 50% width like the rest of the site's Dela Gothic One display
+     type (see the comment above .hero__venue/.section-heading/.artist__name) —
+     inline-block so the transform has a box to scale, centered origin since
+     the flex-centered box's center should stay put as it's squashed */
+  display: inline-block;
+  transform: scaleX(0.5);
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--red);
+  font-size: clamp(1.8rem, 8vw, 3.5rem);
+  letter-spacing: -0.01em;
+  animation: loading-pulse 1.1s ease-in-out infinite;
+}
+
+@keyframes loading-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+/* js/script.js adds this once fonts are ready and the squashed titles have
+   resized — kept in the DOM (not display:none) until the transition ends,
+   so the fade actually plays instead of snapping away instantly */
+.loading-screen--hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* visitors who'd rather not see a pulsing animation get an instant hide
+   instead — the screen still exists just as long, only the "loading" cue
+   changes from pulsing to static */
+@media (prefers-reduced-motion: reduce) {
+  .loading-screen__mark {
+    animation: none;
+  }
+}
+
 /* ---------- hero (poster reproduction) ---------- */
 
 .hero {

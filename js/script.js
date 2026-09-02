@@ -98,19 +98,41 @@ function scrollToInitialHash() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  // covers the page until fonts are loaded and the squashed titles have
+  // resized against them, so visitors don't see that settling happen
+  const loadingScreen = document.getElementById("loadingScreen");
+  let loadingHidden = false;
+  function hideLoadingScreen() {
+    if (loadingHidden || !loadingScreen) return;
+    loadingHidden = true;
+    loadingScreen.classList.add("loading-screen--hidden");
+    loadingScreen.addEventListener(
+      "transitionend",
+      () => loadingScreen.remove(),
+      { once: true },
+    );
+  }
+  // safety net: a stalled font load or an error elsewhere in this handler
+  // should never leave visitors stuck behind the loading screen for good
+  setTimeout(hideLoadingScreen, 4000);
+
   const runFit = () => {
     fitSquashedTitles();
     syncMarqueeSize();
+  };
+  const finishLoad = () => {
+    scrollToInitialHash();
+    hideLoadingScreen();
   };
   if (document.fonts && document.fonts.ready) {
     document.fonts.ready.then(() => {
       runFit();
       // one frame later, so the resized hero has been laid out
-      requestAnimationFrame(scrollToInitialHash);
+      requestAnimationFrame(finishLoad);
     });
   } else {
     runFit();
-    requestAnimationFrame(scrollToInitialHash);
+    requestAnimationFrame(finishLoad);
   }
 
   let resizeTimer;

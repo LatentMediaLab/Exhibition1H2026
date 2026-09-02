@@ -51,6 +51,18 @@
     <link rel="stylesheet" href="css/style.css" />
   </head>
   <body>
+    <!-- covers the page while fonts load and js/script.js's squashed-title
+         math resolves — hidden by js/script.js once that settles, so
+         visitors don't see the un-sized/wrong-font flash while it runs -->
+    <div
+      id="loadingScreen"
+      class="loading-screen"
+      role="status"
+      aria-label="Loading"
+    >
+      <span class="loading-screen__mark">.HMN</span>
+    </div>
+
     <div class="noise" aria-hidden="true"></div>
 
     <main>
