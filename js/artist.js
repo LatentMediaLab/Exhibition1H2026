@@ -8,13 +8,28 @@ function getYouTubeEmbedUrl(url) {
     if (parsed.hostname === "youtu.be") {
       return `https://www.youtube.com/embed${parsed.pathname}`;
     }
-    if (parsed.hostname.endsWith("youtube.com") && parsed.searchParams.has("v")) {
+    if (
+      parsed.hostname.endsWith("youtube.com") &&
+      parsed.searchParams.has("v")
+    ) {
       return `https://www.youtube.com/embed/${parsed.searchParams.get("v")}`;
     }
   } catch (e) {
     // not a valid URL — fall through to null
   }
   return null;
+}
+
+// Link thumbnails and search-result snippets (og:title/og:description and
+// the plain "description" meta in <head>) are static — there's one
+// artist.html serving every ?id=, so the generic placeholder only becomes
+// the real name/bio once this runs and knows which artist that is. OG tags
+// key off "property", the plain description off "name" — try both.
+function setMeta(key, content) {
+  const el = document.querySelector(
+    `meta[property="${key}"], meta[name="${key}"]`,
+  );
+  if (el) el.content = content;
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -28,6 +43,13 @@ document.addEventListener("DOMContentLoaded", () => {
     notFound.hidden = false;
     document.title = "出展者が見つかりませんでした — .HUMAN";
     return;
+  }
+
+  document.title = `${artist.name} — .HUMAN by Latent Media Lab.`;
+  setMeta("og:title", `${artist.name} — .HUMAN by Latent Media Lab.`);
+  if (artist.bio) {
+    setMeta("og:description", artist.bio);
+    setMeta("description", artist.bio);
   }
 
   document.getElementById("artistName").textContent = artist.name;
@@ -109,5 +131,4 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   content.hidden = false;
-  document.title = `${artist.name} — .HUMAN`;
 });
