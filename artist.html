@@ -9,30 +9,42 @@
       content="Exhibitor profile — .HUMAN by Latent Media Lab."
     />
 
-    <!-- link thumbnails: landscape first (what most unfurlers — Slack,
-         Discord, iMessage, LINE, Facebook — show), square second for
-         platforms/cards that prefer it (e.g. Twitter's "summary" card) -->
+    <!-- link thumbnails: landscape first (the standard OG size — this is
+         what twitter:image uses too, since twitter:card is
+         summary_large_image and always renders as a wide banner; feeding
+         it the square image would center-crop off its top and bottom).
+         Square declared second as an extra og:image for crawlers (mainly
+         Facebook) that support multiple images and may prefer it for their
+         own layout. og:title/description and their twitter: counterparts
+         start generic and are overwritten per-artist by js/artist.js once
+         it knows which exhibitor this page is for. -->
     <meta property="og:title" content="Artist — .HUMAN" />
     <meta
       property="og:description"
       content="Exhibitor profile — .HUMAN by Latent Media Lab."
     />
+    <meta property="og:type" content="website" />
     <meta
       property="og:image"
-      content="https://latentmedialab.github.io/Exhibition1H2026/static/dothuman_thumbLandscape.png"
+      content="https://latentmedialab.github.io/Exhibition1H2026/static/dothuman_thumbLandscape.jpg"
     />
-    <meta property="og:image:width" content="1500" />
-    <meta property="og:image:height" content="1000" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
     <meta
       property="og:image"
-      content="https://latentmedialab.github.io/Exhibition1H2026/static/dothuman_thumbSquare.png"
+      content="https://latentmedialab.github.io/Exhibition1H2026/static/dothuman_thumbSquare.jpg"
     />
     <meta property="og:image:width" content="1000" />
     <meta property="og:image:height" content="1000" />
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Artist — .HUMAN" />
+    <meta
+      name="twitter:description"
+      content="Exhibitor profile — .HUMAN by Latent Media Lab."
+    />
     <meta
       name="twitter:image"
-      content="https://latentmedialab.github.io/Exhibition1H2026/static/dothuman_thumbLandscape.png"
+      content="https://latentmedialab.github.io/Exhibition1H2026/static/dothuman_thumbLandscape.jpg"
     />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />

@@ -47,8 +47,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.title = `${artist.name} — .HUMAN by Latent Media Lab.`;
   setMeta("og:title", `${artist.name} — .HUMAN by Latent Media Lab.`);
+  // twitter:title/description take precedence over the og: fallback on
+  // Twitter/X, so they need the same per-artist update or a shared link
+  // there would show the generic title instead
+  setMeta("twitter:title", `${artist.name} — .HUMAN by Latent Media Lab.`);
   if (artist.bio) {
     setMeta("og:description", artist.bio);
+    setMeta("twitter:description", artist.bio);
     setMeta("description", artist.bio);
   }
 
