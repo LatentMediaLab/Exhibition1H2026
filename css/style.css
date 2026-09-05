@@ -224,7 +224,7 @@ a {
 /* same max-width + centering as .about__inner, so hero content lines up
    with the rest of the page's text column at wide viewports */
 .hero__info-inner {
-  max-width: 72rem;
+  max-width: 80rem;
   margin: 0 auto;
 }
 
@@ -243,6 +243,10 @@ a {
   white-space: nowrap;
 }
 
+.hero__dates-link {
+  text-decoration: underline;
+}
+
 .hero__venue {
   margin: 0;
   width: fit-content;
@@ -252,6 +256,14 @@ a {
   line-height: 0.9;
   letter-spacing: -0.01em;
   overflow-wrap: break-word;
+  /* Dela Gothic One's natural glyph height overshoots this tight
+     line-height well past the box's own edges (see the ink-vs-line-box
+     measurements near .about__text--lead) — at this font-size that
+     overshoot is large enough to bleed into .hero__dates above it and
+     steal clicks meant for its link. This heading has nothing to click
+     (its accessible name is the aria-label, not this decorative text), so
+     removing it from hit-testing entirely is safe. */
+  pointer-events: none;
 }
 
 /* inline-block (not plain inline) so scrollWidth is measurable in js/script.js */
@@ -272,7 +284,7 @@ a {
 }
 
 .about__inner {
-  max-width: 72rem;
+  max-width: 80rem;
   margin: 0 auto;
 }
 
@@ -286,6 +298,20 @@ a {
 
 .about__text:last-child {
   margin-bottom: 0;
+}
+
+/* visually (not numerically) matches .section-heading (GUEST TALK /
+   EXHIBITORS). Matching cap-height alone isn't enough here: .section-heading
+   is squashed to half width (scaleX(0.5)), so its glyphs are tall and thin,
+   while M PLUS 1 Code's full-width kanji are roughly square — at equal
+   height the kanji have far more stroke area/width and read as noticeably
+   bigger. Scaling by rendered glyph AREA instead (kanji are ~square, so
+   area shrinks with the square of font-size) lands near 60% of the
+   headings' own clamp(), which is what actually reads as the same size. */
+.about__text--lead {
+  font-size: clamp(1.65rem, 4.25vw, 2.75rem);
+  font-weight: 700;
+  line-height: 1.2;
 }
 
 /* squashed like the other display type. Sitting inline in running text, the
@@ -315,7 +341,7 @@ a {
 }
 
 .guest__inner {
-  max-width: 72rem;
+  max-width: 80rem;
   margin: 0 auto;
 }
 
@@ -466,7 +492,6 @@ a {
   width: 50%;
 }
 
-
 .schedule th,
 .schedule td {
   text-align: left;
@@ -521,7 +546,7 @@ a {
      layout width to size against, off-center and too narrow. An explicit
      width sidesteps that resolution entirely, flex item or not. */
   width: 100%;
-  max-width: 72rem;
+  max-width: 80rem;
   margin: 0 auto;
 }
 
@@ -632,7 +657,7 @@ a {
 }
 
 .footer__inner {
-  max-width: 72rem;
+  max-width: 80rem;
   margin: 0 auto;
 }
 
@@ -662,10 +687,13 @@ a {
 }
 
 /* columns size to their own content and space-between distributes the
-   leftover width evenly, instead of stretching to 1fr with a fixed gap */
+   leftover width evenly, instead of stretching to 1fr with a fixed gap.
+   3 tracks for the 3 .footer__block children — a 4th phantom track here
+   would eat into the space-between distribution and pull the last real
+   column in from the right edge instead of flush against it */
 .footer__grid {
   display: grid;
-  grid-template-columns: repeat(4, auto);
+  grid-template-columns: repeat(3, auto);
   justify-content: space-between;
   row-gap: 2.5rem;
   padding-bottom: 10rem;
@@ -689,6 +717,14 @@ a {
   color: var(--white);
 }
 
+/* CJK line-breaking allows a break between any two characters by default,
+   including mid-word inside 徒歩 — nowrap keeps "より徒歩10分" together as
+   one unit; the <wbr> right before it in the HTML is the only break point
+   offered, and only gets used if the station name's line doesn't fit it */
+.footer__access-time {
+  white-space: nowrap;
+}
+
 /* per-day hours as a two-column grid so the times line up, instead of
    restating the month/weekday already given by the date range above */
 .footer__hours {
@@ -703,6 +739,7 @@ a {
 }
 
 .footer__logo {
+  margin-top: 1rem;
   max-width: 9rem;
   height: auto;
 }
@@ -771,7 +808,7 @@ a {
 }
 
 .artist__inner {
-  max-width: 48rem;
+  max-width: 60rem;
   margin: 0 auto;
 }
 
@@ -1039,13 +1076,29 @@ a {
     aspect-ratio: 16 / 9;
   }
 
-  /* space-between alone has no floor — with only 2 columns left, and each
-     block's content often wide enough to leave little slack, it can push
-     them almost flush together. An explicit column-gap guarantees a gap
-     regardless of how wide either column's content happens to be. */
+  /* 1fr 1fr (not auto) so the two columns actually split the row evenly —
+     auto sizes each to its own content, which left 会場/会期 unbalanced and
+     a single large gap wherever their content happened to fall short. */
   .footer__grid {
-    grid-template-columns: repeat(2, auto);
+    grid-template-columns: repeat(2, 1fr);
     column-gap: clamp(1.5rem, 4vw, 3rem);
+  }
+
+  /* with 2 columns and 3 blocks, 主催 auto-places into row 2's left column,
+     leaving it stranded under 会場 with the whole right column empty next
+     to it — pinning it to column 2 instead moves it under 会期 on the
+     right, where the empty cell actually is */
+  .footer__block--brand {
+    grid-column: 2;
+  }
+
+  /* desktop's max-width: 9rem is sized for sitting alongside 会場/会期 in a
+     4th column — here 主催 has this whole column to itself, so let the logo
+     scale up to fill it instead of leaving it small on one side */
+  .footer__logo {
+    max-width: 75%;
+    width: 100%;
+    justify-self: center;
   }
 
   /* .guest__heading bundles title+name-row+role, and .guest__name-row /

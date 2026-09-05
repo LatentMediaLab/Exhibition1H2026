@@ -79,7 +79,7 @@
             loop
             playsinline
             preload="auto"
-            poster=""
+            poster="static/dothuman_poster.jpg"
             aria-label="Animated generative artwork loop for .HUMAN exhibition"
           >
             <source src="static/dothuman_loop.mp4" type="video/mp4" />
@@ -90,7 +90,16 @@
         <div class="hero__info">
           <div class="hero__info-inner">
             <p class="hero__dates">
-              <span class="hero__dates-org">Latent Media Lab.</span>
+              <span class="hero__dates-org"
+                >by
+                <a
+                  href="https://media.kyoto-seika.ac.jp/latentmedia/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="hero__dates-link"
+                  >Latent Media Lab.</a
+                ></span
+              >
               <span class="hero__dates-range"
                 >2026.09/18&nbsp;FRI&nbsp;–&nbsp;2026.09/20&nbsp;SUN</span
               >
@@ -107,14 +116,37 @@
 
       <section id="about" class="about">
         <div class="about__inner">
-          <p class="about__text" lang="ja">
-            人間と機械、どちらが優れているかを問うことに意味はない。人類学者・久保明教は『機械カニバリズム　人間なきあとの人類学へ』で、人間と機械の関係を、相手の視点から自分を見つめ、自分自身を他者として作り変えていく「喰らい合い」の過程として描いた。競争でも代替でもなく、終わりのない相互の作り変えがそこにはある。
+          <p class="about__text about__text--lead" lang="ja">
+            人間と機械のどちらが優れているかを問うことに、意味はない。
           </p>
           <p class="about__text" lang="ja">
-            <span class="accent">.HUMAN</span
-            >は、この本を輪読するなかから生まれ、出展者それぞれが人間と機械の関係について考えた作品を持ち寄る展覧会だ。タイトルの「.HUMAN」も、.exeや.jpgのような機械のファイル形式を借りながら、そこに名づけているのは人間である。スマートフォンの通知に急かされて動くとき、その意思がどこまで自分のもので、どこからシステムに促されたものか、私たちにはもう判別できない。喰らっているのは私たちなのか、喰らわれているのは私たちなのか、まだ「私たち」だとわかる、けれど限界まで引き伸ばされたなにかが、そこにはある。
+            人類学者・久保明教は『機械カニバリズム　人間なきあとの人類学へ』で、人間と機械の関係を「喰らい合い」の過程として描いた。それは、相手を喰らい、その視点を取り込むことで、自らを作り変えていく過程である。そこにあるのは、競争でも代替でもない、終わりのない相互の作り変えだ。
+          </p>
+          <p class="about__text" lang="ja">
+            <span class="accent">.HUMAN</span>
+            は、この本の輪読から生まれた展覧会である。出展者はそれぞれ、人間と機械の関係をめぐる作品を持ち寄る。タイトルの「.HUMAN」は、.exeや.jpgといった拡張子の形式を借りている。しかし、そう名づけたのは人間である。
+          </p>
+          <p class="about__text" lang="ja">
+            スマートフォンの通知に急かされて動くとき、その意志のどこまでが自分のもので、どこからが通知によって生じたものなのか、私たちにはもう判別できない。私たちは喰らっているのか、喰らわれているのか。まだ「私たち」と呼べる、しかし限界まで引き伸ばされたなにかが、ここにある。
           </p>
         </div>
+      </section>
+
+      <section id="exhibitors" class="exhibitors">
+        <div class="exhibitors__inner">
+          <h2 class="section-heading">EXHIBITORS</h2>
+        </div>
+
+        <!-- a sibling of .exhibitors__inner (not nested in it) so its drag/
+             float bounds span the full section width, not just the inner
+             column — same full-bleed pattern as .footer__marquee below
+             .footer__inner. Populated from EXHIBITORS by js/exhibitor-web.js:
+             names float and drift, connected by lines to their nearest
+             neighbors. Falls back to a plain wrapped list under
+             prefers-reduced-motion (see .exhibitor-web in css/style.css) —
+             that fallback still reads as part of this section visually
+             thanks to shared padding, even though it's not in .exhibitors__inner. -->
+        <ul class="exhibitor-web" id="exhibitorWeb"></ul>
       </section>
 
       <section id="guest" class="guest">
@@ -213,23 +245,6 @@
         </div>
       </section>
 
-      <section id="exhibitors" class="exhibitors">
-        <div class="exhibitors__inner">
-          <h2 class="section-heading">EXHIBITORS</h2>
-        </div>
-
-        <!-- a sibling of .exhibitors__inner (not nested in it) so its drag/
-             float bounds span the full section width, not just the inner
-             column — same full-bleed pattern as .footer__marquee below
-             .footer__inner. Populated from EXHIBITORS by js/exhibitor-web.js:
-             names float and drift, connected by lines to their nearest
-             neighbors. Falls back to a plain wrapped list under
-             prefers-reduced-motion (see .exhibitor-web in css/style.css) —
-             that fallback still reads as part of this section visually
-             thanks to shared padding, even though it's not in .exhibitors__inner. -->
-        <ul class="exhibitor-web" id="exhibitorWeb"></ul>
-      </section>
-
       <section id="footer" class="footer">
         <div class="footer__inner">
           <div class="footer__layout">
@@ -249,7 +264,16 @@
                   〒606-8392 京都市左京区<br />聖護院山王町18 メタボ岡崎
                 </p>
                 <p lang="ja">
-                  <br />京阪本線「神宮丸田町」より徒歩10分<br />地下鉄東西線「東山」より徒歩15分<br />叡山電鉄「出町柳」より徒歩20分
+                  <br />京阪本線「神宮丸田町」<wbr /><span
+                    class="footer__access-time"
+                    >より徒歩10分</span
+                  ><br />地下鉄東西線「東山」<wbr /><span
+                    class="footer__access-time"
+                    >より徒歩15分</span
+                  ><br />叡山電鉄「出町柳」<wbr /><span
+                    class="footer__access-time"
+                    >より徒歩20分</span
+                  >
                 </p>
               </div>
               <div class="footer__block">
@@ -261,7 +285,7 @@
                 <h3 class="footer__block-sub" lang="ja">入場料</h3>
                 <p lang="ja">無料</p>
               </div>
-              <div class="footer__block">
+              <div class="footer__block footer__block--brand">
                 <h3 lang="ja">主催</h3>
                 <a
                   href="https://media.kyoto-seika.ac.jp/latentmedia/"

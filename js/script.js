@@ -112,28 +112,78 @@ document.addEventListener("DOMContentLoaded", () => {
       { once: true },
     );
   }
-  // safety net: a stalled font load or an error elsewhere in this handler
-  // should never leave visitors stuck behind the loading screen for good
-  setTimeout(hideLoadingScreen, 4000);
-
   const runFit = () => {
     fitSquashedTitles();
     syncMarqueeSize();
   };
-  const finishLoad = () => {
-    scrollToInitialHash();
-    hideLoadingScreen();
-  };
-  if (document.fonts && document.fonts.ready) {
-    document.fonts.ready.then(() => {
-      runFit();
-      // one frame later, so the resized hero has been laid out
-      requestAnimationFrame(finishLoad);
-    });
-  } else {
-    runFit();
-    requestAnimationFrame(finishLoad);
+
+  // document.fonts.ready alone is not enough to gate on: it resolves whenever
+  // font loading is momentarily idle, which on a cold load happens before the
+  // stylesheet has even requested these faces. Naming them makes the wait real
+  // — fitSquashedTitles() measures against the display face, so starting it
+  // early solves for fallback metrics and the title visibly jumps later.
+  function fontsReady() {
+    if (!document.fonts || !document.fonts.load) return Promise.resolve();
+    return Promise.all([
+      document.fonts.load('400 100px "Dela Gothic One"'),
+      document.fonts.load('400 1rem "M PLUS 1 Code"'),
+    ])
+      .then(() => document.fonts.ready)
+      .catch(() => {}); // a font that fails to load shouldn't strand the cover
   }
+
+  // the hero video is the first thing on the page, so lifting the cover before
+  // it can play reveals an empty black box. HAVE_FUTURE_DATA means enough is
+  // buffered to start; error/missing source resolves too, so a video that will
+  // never load can't hold the page back on its own.
+  function videoReady() {
+    const video = document.querySelector(".hero__video");
+    if (!video) return Promise.resolve();
+    if (video.readyState >= 3) return Promise.resolve();
+    return new Promise((resolve) => {
+      const done = () => {
+        video.removeEventListener("canplay", done);
+        video.removeEventListener("playing", done);
+        video.removeEventListener("error", done);
+        resolve();
+      };
+      video.addEventListener("canplay", done);
+      video.addEventListener("playing", done);
+      video.addEventListener("error", done);
+    });
+  }
+
+  // fit first, then reveal a frame later so the resized hero has been laid out
+  // before the cover comes off and before we scroll to any hash target
+  function finishLoad() {
+    runFit();
+    requestAnimationFrame(() => {
+      scrollToInitialHash();
+      hideLoadingScreen();
+    });
+  }
+
+  // settles either way, so one slow asset can't strand the cover on its own
+  function withTimeout(promise, ms) {
+    return Promise.race([
+      promise,
+      new Promise((resolve) => setTimeout(resolve, ms)),
+    ]);
+  }
+
+  // fonts are waited on outright — solving the fit against fallback metrics is
+  // what makes the title visibly jump. The video only gets a budget: it's the
+  // single largest asset on the page, and holding a black cover over a fully
+  // laid-out page while it buffers is worse than letting it arrive a moment late.
+  Promise.all([fontsReady(), withTimeout(videoReady(), 2500)]).then(finishLoad);
+
+  // last resort for a stalled fetch. Runs the same fit rather than just
+  // hiding, so the reveal is as correct as it can be with whatever has
+  // arrived — and if the fonts land afterwards the line above re-fits and
+  // corrects the size (hiding itself is idempotent).
+  setTimeout(() => {
+    if (!loadingHidden) finishLoad();
+  }, 10000);
 
   let resizeTimer;
   window.addEventListener("resize", () => {
