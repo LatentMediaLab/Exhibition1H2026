@@ -108,9 +108,6 @@ var EXHIBITORS = [
     statement: "作品ステートメント準備中。",
     photo:
       "https://media.kyoto-seika.ac.jp/latentmedia/wp-content/uploads/2026/03/IMG_8341-224T159%E6%9D%BE%E6%B0%B8%E3%81%BE%E3%81%AA%E3%81%BF.jpeg",
-    social: {
-      x: "https://x.com/Tokage_Thunder",
-    },
   },
   {
     id: "artist-07",
