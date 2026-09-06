@@ -42,7 +42,9 @@ body {
    centered on purpose, and its full-width box already keeps both centers coincident. */
 .hero__venue,
 .section-heading,
-.artist__name {
+.artist__name,
+.artist__section-heading,
+.past-works__heading {
   display: inline-block;
   transform: scaleX(0.5);
   transform-origin: left;
@@ -50,7 +52,9 @@ body {
 
 .hero__venue,
 .section-heading,
-.artist__name {
+.artist__name,
+.artist__section-heading,
+.past-works__heading {
   display: block;
 }
 
@@ -834,25 +838,58 @@ a {
   margin: 0 0 0.6rem;
 }
 
-.artist__work {
-  color: var(--grey);
-  font-size: 1rem;
-  margin: 0 0 2.5rem;
+/* the work's title and medium, directly above the statement describing it.
+   Title left, medium right — same space-between pairing as the guest
+   section's name/social row. Not squashed display type, so a plain flex row
+   works here (unlike .guest__heading-row, which has to position its right
+   half absolutely around a scaleX'd heading's oversized layout box). */
+.artist__work-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.5rem;
+  margin: 0 0 0.6rem;
 }
 
-.artist__bio {
+/* matches .guest__name's size/weight/colour */
+.artist__work {
+  margin: 0;
+  font-family: var(--font-body);
+  font-weight: 700;
+  color: var(--white);
+  font-size: clamp(1.4rem, 3.2vw, 2rem);
+  line-height: 1.4;
+}
+
+.artist__work-medium {
+  color: var(--grey);
+  font-size: 1rem;
+}
+
+/* deliberately no max-width on either: .artist__inner already sets the
+   measure, and the bio's own column is narrowed further by the photo. An
+   extra cap on top of that just left dead space — the bio wrapping short of
+   the SNS links above it, the statement short of its medium tag. */
+.artist__bio,
+.artist__statement {
   font-size: 1rem;
   line-height: 1.75;
   color: var(--white);
-  max-width: 40rem;
   margin: 0 0 1.5rem;
+  /* both are set via textContent, so markup in the data would show up as
+     literal text — a "\n" in exhibitors-data.js is how a paragraph break
+     gets in, and pre-line is what renders it (while still collapsing the
+     indentation of multi-line string concatenations in that file) */
+  white-space: pre-line;
 }
 
-/* name/statement left, profile picture right — same arrangement and
+/* name/bio left, profile picture right — same arrangement and
    grayscale treatment as the guest section's portrait */
 .artist__intro {
+  --artist-photo-width: 13rem;
   display: grid;
-  grid-template-columns: 1fr 13rem;
+  grid-template-columns: 1fr var(--artist-photo-width);
   grid-template-areas: "text photo";
   gap: clamp(1.5rem, 4vw, 2.5rem);
   align-items: start;
@@ -886,10 +923,16 @@ a {
   white-space: nowrap;
 }
 
+/* fixed width, growing height: min-height (not aspect-ratio) sets the 3:4
+   floor, so a short bio still gets the intended portrait crop, while
+   align-self:stretch lets a longer one pull the photo down to match the
+   text column's full height instead of leaving a gap beside it. The img
+   inside is object-fit:cover, so it re-crops rather than distorting. */
 .artist__photo {
   grid-area: photo;
-  aspect-ratio: 3 / 4;
   width: 100%;
+  min-height: calc(var(--artist-photo-width) * 4 / 3);
+  align-self: stretch;
   justify-self: end;
   overflow: hidden;
   background: #0a0a0a;
@@ -904,18 +947,25 @@ a {
 
 /* ---------- past works (過去作品) ---------- */
 
+/* 出展作品 and 過去作 are peer sections below the intro — same rule so the
+   divider and spacing between them stay identical */
+.artist__work-section,
 .past-works {
   margin-top: clamp(3rem, 8vw, 5rem);
   border-top: 1px solid rgba(255, 255, 255, 0.25);
   padding-top: clamp(1.5rem, 4vw, 2.5rem);
 }
 
+/* same squashed display treatment and size as .artist__name above them */
+.artist__section-heading,
 .past-works__heading {
+  width: fit-content;
   margin: 0 0 1.5rem;
-  font-size: 0.85rem;
-  font-weight: 500;
+  font-family: var(--font-display);
+  font-weight: 400;
   color: var(--red);
-  letter-spacing: 0.05em;
+  font-size: clamp(2rem, 6vw, 3.5rem);
+  line-height: 1.3;
 }
 
 /* one work per row: a full-width image with its caption beneath */
@@ -1030,34 +1080,19 @@ a {
       "text";
   }
 
-  /* keeps the desktop 1fr auto (name left, links right) — only the extra
-     bottom margin is mobile-specific here */
-  .artist__name-row {
-    /* was the small gap (0.6rem) before .artist__work; swapped with
-       .artist__work's own margin below so the name/SNS block reads as
-       clearly separate from the work/statement block that follows it */
-    margin-bottom: 2.5rem;
-  }
-
-  .artist__work {
-    /* was 2.5rem — now the small gap, so this sits with the statement
-       it's describing instead of with the name/SNS block above it */
-    margin-bottom: 0.6rem;
-  }
-
   /* full-bleed via negative margins that exactly cancel .artist's own
      padding (unlike .footer__map's 100vw+transform trick, this doesn't
      depend on the containing block being centered on the viewport — it
      just widens by the padding it's canceling, which holds regardless of
-     how the grid track itself resolves). Height is fixed (not aspect-ratio)
-     so widening to the full viewport doesn't also grow it taller — it
-     deliberately turns the old 13rem-wide 3:4 portrait crop into a wide
-     landscape strip of the same height. */
+     how the grid track itself resolves). Height is pinned outright here —
+     the desktop rule's growing height only makes sense beside a text
+     column, and widening to the full viewport shouldn't also grow it
+     taller. It deliberately turns the desktop 3:4 portrait crop into a
+     wide landscape strip of that same height. */
   .artist__photo {
     width: calc(100% + 2 * var(--gap));
     max-width: none;
-    height: calc(13rem * 4 / 3);
-    aspect-ratio: auto;
+    height: calc(var(--artist-photo-width) * 4 / 3);
     margin-left: calc(-1 * var(--gap));
     justify-self: stretch;
   }
