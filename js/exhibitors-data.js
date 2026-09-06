@@ -131,10 +131,6 @@ var EXHIBITORS = [
     bio: "作家ステートメント準備中。",
     photo:
       "https://media.kyoto-seika.ac.jp/latentmedia/wp-content/uploads/2026/03/224T195%E5%85%AD%E5%8F%8D%E7%94%B0-%E9%99%BD%E5%B0%9A-e1773920140825.jpg",
-    pastWorks: [
-      { title: "無題 I", year: "2025", medium: "映像インスタレーション" },
-      { title: "無題 II", year: "2024", medium: "ジェネラティブ・イメージ" },
-    ],
     social: {
       tiktok: "https://www.tiktok.com/@panier597",
       instagram: "https://instagram.com/tan._.da",
