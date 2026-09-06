@@ -175,6 +175,11 @@ a {
   font-size: clamp(4.5rem, 18vw, 15rem);
   letter-spacing: -0.01em;
   white-space: nowrap;
+  /* poster-style display text, not reading content — the visible glyphs are
+     already aria-hidden (this h1's real accessible name is its aria-label),
+     so blocking selection here doesn't affect screen readers */
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 /* inline-block (not plain inline) so scrollWidth is measurable in js/script.js */
@@ -260,14 +265,22 @@ a {
   line-height: 0.9;
   letter-spacing: -0.01em;
   overflow-wrap: break-word;
-  /* Dela Gothic One's natural glyph height overshoots this tight
-     line-height well past the box's own edges (see the ink-vs-line-box
-     measurements near .about__text--lead) — at this font-size that
-     overshoot is large enough to bleed into .hero__dates above it and
-     steal clicks meant for its link. This heading has nothing to click
-     (its accessible name is the aria-label, not this decorative text), so
-     removing it from hit-testing entirely is safe. */
-  pointer-events: none;
+}
+
+/* Dela Gothic One's natural glyph metrics are much taller than this
+   line-height box (see the ink-vs-line-box measurements near
+   .about__text--lead) — the actual ink (cap-height, no descenders here)
+   sits well within the box already, but browsers hit-test text against the
+   font's own metrics, not the declared line-height. Without this clip, that
+   invisible overshoot bleeds into .hero__dates above and steals clicks
+   meant for its link. Scoped to the link itself (not .hero__venue, which
+   needs its plain width: fit-content + transform combo left alone — adding
+   overflow: hidden there instead made the box shrink-wrap to roughly half
+   its content's actual width, silently cropping "METABO" off the side). */
+.hero__venue-link {
+  display: inline-block;
+  overflow: hidden;
+  line-height: 0.9;
 }
 
 /* inline-block (not plain inline) so scrollWidth is measurable in js/script.js */
@@ -276,7 +289,7 @@ a {
 }
 
 .hero__address {
-  margin: 1em 0 0;
+  margin: 1rem 0 0;
   font-size: clamp(0.7rem, 1.6vw, 1rem);
   color: var(--red);
 }
@@ -1119,12 +1132,28 @@ a {
     column-gap: clamp(1.5rem, 4vw, 3rem);
   }
 
-  /* with 2 columns and 3 blocks, 主催 auto-places into row 2's left column,
-     leaving it stranded under 会場 with the whole right column empty next
-     to it — pinning it to column 2 instead moves it under 会期 on the
-     right, where the empty cell actually is */
+  /* swaps 会場/会期 for this 2-column layout specifically — visual order
+     only, DOM order stays 会場-then-会期 (so the single-column mobile stack
+     and screen-reader/tab order below this breakpoint are unaffected).
+     Row is pinned explicitly on both, not left to auto-placement: with only
+     grid-column set, the two ended up in different rows entirely (会場
+     alone in row 1, 会期 pushed to row 2 beside 主催) rather than sharing a
+     row — auto-placement doesn't reliably pair same-row items just because
+     they claim different columns. */
+  .footer__block--venue {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .footer__block--dates {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  /* pinned below both of the above, in whichever column ends up under it */
   .footer__block--brand {
     grid-column: 2;
+    grid-row: 2;
   }
 
   /* desktop's max-width: 9rem is sized for sitting alongside 会場/会期 in a
@@ -1244,5 +1273,18 @@ a {
 @media (max-width: 420px) {
   .footer__grid {
     grid-template-columns: 1fr;
+  }
+
+  /* the 720px breakpoint's column swap (grid-column/grid-row on these
+     three) still applies down here too — max-width queries overlap, they
+     don't replace each other. Left unset, "column: 2" on a grid that only
+     has one explicit column doesn't just get ignored: it creates an
+     implicit second column to hold that item, silently turning this back
+     into a 2-column layout instead of the single stack this rule intends. */
+  .footer__block--venue,
+  .footer__block--dates,
+  .footer__block--brand {
+    grid-column: auto;
+    grid-row: auto;
   }
 }
