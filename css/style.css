@@ -881,14 +881,24 @@ a {
 }
 
 /* name left, social links pushed right on the same line — same as
-   .guest__name-row in the guest section. Grid (1fr auto) rather than flex so
-   a long name shrinks its own track instead of bumping the links to their
-   own line. */
+   .guest__name-row in the guest section.
+
+   Wrapping flex, not grid (1fr auto): with a grid the right-hand track was
+   sized by what the name's track left over, so on narrow screens it got
+   squeezed under the pills' own width and .social-links wrapped INTERNALLY
+   into two lines of pills. That made the row twice as tall as the name, and
+   align-items:center then floated the name down to the middle of it — the
+   pills appeared to detach and hover beside the name (reported on iOS at
+   ~385px; reproduced in WebKit at every width below ~390). Flex-wrap moves
+   the whole .social-links block down to its own line instead, in one piece,
+   whenever it no longer fits beside the name — content-driven, so it also
+   covers exhibitors with longer names or more links rather than relying on a
+   breakpoint guess about where that happens. */
 .artist__name-row {
-  display: grid;
-  grid-template-columns: 1fr auto;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
   align-items: center;
-  gap: 0.75rem 1.5rem;
   margin-bottom: 0.6rem;
 }
 
@@ -900,7 +910,8 @@ a {
   margin-bottom: 0;
   /* squashed again, so the layout box is twice the glyphs actually drawn:
      nowrap stops the name breaking across lines on metrics that no longer
-     match what's painted — at half width it always fits its track */
+     match what's painted — at half width it always fits the space it's
+     given (and min-width:0 keeps that oversized box from forcing overflow) */
   white-space: nowrap;
 }
 
