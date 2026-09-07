@@ -79,6 +79,158 @@ function syncMarqueeSize() {
   if (probe) probe.remove();
 }
 
+// ---------------------------------------------------------------------------
+// The closing marquee.
+//
+// This used to be a pure CSS keyframe: every question twice in one long track,
+// sliding by -50%. That made the animated element enormous — 42,000px wide at
+// a 390px viewport, 73,000px at 1280 — and because the scaleX(0.5) squash
+// halves paint but NOT layout, twice as wide as what actually gets drawn.
+// Safari has to keep a composited layer that size for a transform animation,
+// and past some threshold it simply stops backing it: the text vanished in
+// clean rectangular blocks, sometimes leaving only a sliver at one edge.
+// (Desktop Safari and iOS both; Chromium and headless WebKit never showed it,
+// which is why it took a screenshot from a real browser to pin down.)
+//
+// So the track no longer holds the whole script. It holds just enough spans to
+// cover the viewport, and the leftmost one is recycled to the end with the
+// next question's text as it scrolls off — the same five questions cycle
+// forever through a handful of elements. The layer stays a few thousand px
+// wide at any viewport, whatever font-size the hero solves to.
+//
+// The full question list stays in .footer__marquee's aria-label (the track
+// itself is aria-hidden), so recycling text through fewer spans doesn't change
+// what a screen reader is offered.
+const MARQUEE_CYCLE_SECONDS = 240; // one full pass of all five, as the keyframe had
+const MARQUEE_MAX_SPANS = 24; // guard against a pathological font-size/viewport ratio
+let marqueeRun = null;
+
+// layout width, i.e. pre-squash: the track's own translateX is applied inside
+// the scaled parent, so distances here are in that same unscaled space
+function marqueeItemWidth(el) {
+  return el.offsetWidth + parseFloat(getComputedStyle(el).marginRight || 0);
+}
+
+function startMarquee() {
+  const track = document.querySelector(".footer__marquee-track");
+  if (!track) return;
+
+  if (marqueeRun) {
+    cancelAnimationFrame(marqueeRun.raf);
+    if (marqueeRun.io) marqueeRun.io.disconnect();
+    marqueeRun = null;
+  }
+
+  // read the script off the markup once — after the first run the DOM only
+  // holds the recycled pool, which is a different (usually shorter) list
+  if (!startMarquee.questions) {
+    startMarquee.questions = Array.from(track.children).map((el) =>
+      el.textContent.trim(),
+    );
+  }
+  const questions = startMarquee.questions;
+  if (!questions.length) return;
+
+  const makeSpan = (text) => {
+    const span = document.createElement("span");
+    span.className = "footer__marquee-item";
+    span.textContent = text;
+    return span;
+  };
+
+  // one span per question first: their widths at the current font-size are
+  // what set the pace, so that stays keyed to the whole script rather than to
+  // however many spans the pool happens to need
+  track.replaceChildren(...questions.map(makeSpan));
+  syncMarqueeSize();
+
+  const widths = Array.from(track.children).map(marqueeItemWidth);
+  const cycleWidth = widths.reduce((a, b) => a + b, 0);
+  const widest = Math.max(...widths);
+  if (!cycleWidth) return;
+  const speed = cycleWidth / MARQUEE_CYCLE_SECONDS; // layout px per second
+
+  // enough to cover the viewport even in the instant after the leftmost span
+  // is pulled off the front. innerWidth is doubled because a visible pixel
+  // costs two layout pixels under the squash.
+  const needed = window.innerWidth * 2 + widest;
+  let total = cycleWidth;
+  // the pool currently ends on the last question, so the cycle picks back up
+  // at the first one
+  let next = 0;
+  while (total < needed && track.children.length < MARQUEE_MAX_SPANS) {
+    const span = makeSpan(questions[next]);
+    track.appendChild(span);
+    // sized here rather than waiting for the syncMarqueeSize() below, because
+    // the loop's own exit condition depends on measuring it at its real size
+    span.style.fontSize = getComputedStyle(track.firstElementChild).fontSize;
+    next = (next + 1) % questions.length;
+    total += marqueeItemWidth(span);
+  }
+  // trim any span the viewport doesn't need (the common case: the five
+  // questions are far wider than one screen, so this drops most of them)
+  while (track.children.length > 2) {
+    const last = track.lastElementChild;
+    const trimmed = total - marqueeItemWidth(last);
+    if (trimmed < needed) break;
+    last.remove();
+    total = trimmed;
+    next = (next - 1 + questions.length) % questions.length;
+  }
+  syncMarqueeSize(); // size any span added above
+
+  let offset = 0;
+  let firstWidth = marqueeItemWidth(track.firstElementChild);
+  let last = null;
+  // a rebuild (resize) starts the pool over at 0, so clear whatever offset the
+  // previous run left behind rather than waiting for the first frame — while
+  // the footer is off-screen no frame runs, and the stale shift would show
+  track.style.transform = "translateX(0px)";
+
+  const state = { raf: 0, io: null };
+  function frame(now) {
+    if (last !== null) {
+      offset -= (speed * (now - last)) / 1000;
+      // width is only re-read on recycle, not every frame — reading it per
+      // frame would force a synchronous layout on each one
+      while (-offset >= firstWidth && track.children.length > 1) {
+        offset += firstWidth;
+        const recycled = track.firstElementChild;
+        recycled.textContent = questions[next];
+        next = (next + 1) % questions.length;
+        track.appendChild(recycled);
+        firstWidth = marqueeItemWidth(track.firstElementChild);
+      }
+      track.style.transform = "translateX(" + offset + "px)";
+    }
+    last = now;
+    state.raf = requestAnimationFrame(frame);
+  }
+
+  // no reason to drive it while the footer is off-screen
+  const marquee = track.closest(".footer__marquee");
+  if (marquee && "IntersectionObserver" in window) {
+    state.io = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          if (!state.raf) {
+            last = null;
+            state.raf = requestAnimationFrame(frame);
+          }
+        } else if (state.raf) {
+          cancelAnimationFrame(state.raf);
+          state.raf = 0;
+        }
+      });
+    });
+    state.io.observe(marquee);
+  } else {
+    state.raf = requestAnimationFrame(frame);
+  }
+
+  marqueeRun = state;
+}
+
 // Scrolls to the hash the page was opened with (stashed by the inline script
 // in <head>, which strips it so the browser can't jump early). Called only
 // once layout has settled — fonts loaded and the hero title resized — so the
@@ -112,9 +264,12 @@ document.addEventListener("DOMContentLoaded", () => {
       { once: true },
     );
   }
+  // startMarquee() rebuilds the marquee's spans and calls syncMarqueeSize()
+  // itself once they exist — it has to measure them at their final size to
+  // work out how many the viewport needs
   const runFit = () => {
     fitSquashedTitles();
-    syncMarqueeSize();
+    startMarquee();
   };
 
   // document.fonts.ready alone is not enough to gate on: it resolves whenever

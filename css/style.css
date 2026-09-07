@@ -785,20 +785,17 @@ a {
   transform-origin: left;
 }
 
+/* scrolled by startMarquee() in js/script.js, not by a keyframe here: the
+   markup holds the five questions once, and the JS keeps only as many spans
+   as the viewport needs, recycling the leftmost to the end. A CSS animation
+   over the whole script meant a composited layer tens of thousands of px
+   wide, which Safari eventually refuses to back — see the comment on
+   startMarquee for the failure that caused. */
 .footer__marquee-track {
   display: flex;
   align-items: baseline;
   width: max-content;
-  animation: footer-marquee 240s linear infinite;
-}
-
-@keyframes footer-marquee {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-50%);
-  }
+  will-change: transform;
 }
 
 .footer__marquee-item {
