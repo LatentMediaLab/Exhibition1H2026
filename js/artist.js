@@ -60,20 +60,6 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("artistName").textContent = artist.name;
   document.getElementById("artistBio").textContent = artist.bio;
 
-  // no "出展する作品：" prefix — the 出展作品 heading above it already says so.
-  // Title and medium are separate elements, not one joined string: the row
-  // puts the title left and the medium right.
-  document.getElementById("artistWork").textContent = artist.work;
-  document.getElementById("artistWorkMedium").textContent = artist.genre;
-
-  // optional: exhibitors without a statement yet just show title + medium
-  const statement = document.getElementById("artistStatement");
-  if (artist.statement) {
-    statement.textContent = artist.statement;
-  } else {
-    statement.hidden = true;
-  }
-
   // profile picture — the container stays empty (and collapsed by CSS) when
   // an exhibitor has no photo yet
   const photoContainer = document.getElementById("artistPhoto");

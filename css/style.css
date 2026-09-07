@@ -43,7 +43,6 @@ body {
 .hero__venue,
 .section-heading,
 .artist__name,
-.artist__section-heading,
 .past-works__heading {
   display: inline-block;
   transform: scaleX(0.5);
@@ -53,7 +52,6 @@ body {
 .hero__venue,
 .section-heading,
 .artist__name,
-.artist__section-heading,
 .past-works__heading {
   display: block;
 }
@@ -851,48 +849,18 @@ a {
   margin: 0 0 0.6rem;
 }
 
-/* the work's title and medium, directly above the statement describing it.
-   Title left, medium right — same space-between pairing as the guest
-   section's name/social row. Not squashed display type, so a plain flex row
-   works here (unlike .guest__heading-row, which has to position its right
-   half absolutely around a scaleX'd heading's oversized layout box). */
-.artist__work-row {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 0.25rem 1.5rem;
-  margin: 0 0 0.6rem;
-}
-
-/* matches .guest__name's size/weight/colour */
-.artist__work {
-  margin: 0;
-  font-family: var(--font-body);
-  font-weight: 700;
-  color: var(--white);
-  font-size: clamp(1.4rem, 3.2vw, 2rem);
-  line-height: 1.4;
-}
-
-.artist__work-medium {
-  color: var(--grey);
-  font-size: 1rem;
-}
-
-/* deliberately no max-width on either: .artist__inner already sets the
-   measure, and the bio's own column is narrowed further by the photo. An
-   extra cap on top of that just left dead space — the bio wrapping short of
-   the SNS links above it, the statement short of its medium tag. */
-.artist__bio,
-.artist__statement {
+/* deliberately no max-width: .artist__inner already sets the measure, and
+   the bio's own column is narrowed further by the photo. An extra cap on
+   top of that just left dead space — the bio wrapping short of the SNS
+   links above it. */
+.artist__bio {
   font-size: 1rem;
   line-height: 1.75;
   color: var(--white);
   margin: 0 0 1.5rem;
-  /* both are set via textContent, so markup in the data would show up as
-     literal text — a "\n" in exhibitors-data.js is how a paragraph break
-     gets in, and pre-line is what renders it (while still collapsing the
+  /* set via textContent, so markup in the data would show up as literal
+     text — a "\n" in exhibitors-data.js is how a paragraph break gets in,
+     and pre-line is what renders it (while still collapsing the
      indentation of multi-line string concatenations in that file) */
   white-space: pre-line;
 }
@@ -960,17 +928,13 @@ a {
 
 /* ---------- past works (過去作品) ---------- */
 
-/* 出展作品 and 過去作 are peer sections below the intro — same rule so the
-   divider and spacing between them stay identical */
-.artist__work-section,
 .past-works {
   margin-top: clamp(3rem, 8vw, 5rem);
   border-top: 1px solid rgba(255, 255, 255, 0.25);
   padding-top: clamp(1.5rem, 4vw, 2.5rem);
 }
 
-/* same squashed display treatment and size as .artist__name above them */
-.artist__section-heading,
+/* same squashed display treatment and size as .artist__name above it */
 .past-works__heading {
   width: fit-content;
   margin: 0 0 1.5rem;
