@@ -117,7 +117,6 @@ function startMarquee() {
 
   if (marqueeRun) {
     cancelAnimationFrame(marqueeRun.raf);
-    if (marqueeRun.io) marqueeRun.io.disconnect();
     marqueeRun = null;
   }
 
@@ -187,7 +186,7 @@ function startMarquee() {
   // the footer is off-screen no frame runs, and the stale shift would show
   track.style.transform = "translateX(0px)";
 
-  const state = { raf: 0, io: null };
+  const state = { raf: 0 };
   function frame(now) {
     if (last !== null) {
       offset -= (speed * (now - last)) / 1000;
@@ -207,26 +206,14 @@ function startMarquee() {
     state.raf = requestAnimationFrame(frame);
   }
 
-  // no reason to drive it while the footer is off-screen
-  const marquee = track.closest(".footer__marquee");
-  if (marquee && "IntersectionObserver" in window) {
-    state.io = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          if (!state.raf) {
-            last = null;
-            state.raf = requestAnimationFrame(frame);
-          }
-        } else if (state.raf) {
-          cancelAnimationFrame(state.raf);
-          state.raf = 0;
-        }
-      });
-    });
-    state.io.observe(marquee);
-  } else {
-    state.raf = requestAnimationFrame(frame);
-  }
+  // runs for as long as the page is open, whether or not the footer is in
+  // view: it's one continuous loop the visitor should be able to scroll back
+  // to and find further along, not something that waits for an audience.
+  // (Off-screen pausing was tried and reads as the marquee resetting.)
+  // Backgrounding the tab still parks it — browsers stop rAF there on their
+  // own — and it picks up from the same place on return, because each frame
+  // advances by real elapsed time rather than by a fixed step.
+  state.raf = requestAnimationFrame(frame);
 
   marqueeRun = state;
 }
@@ -340,8 +327,17 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!loadingHidden) finishLoad();
   }, 10000);
 
+  // Width-gated, not every resize: on mobile browsers the URL bar sliding in
+  // and out as you scroll fires resize with only the height changed, and
+  // re-running the fit there rebuilt the marquee mid-loop — which read as it
+  // snapping back to the start every time you scrolled. Everything runFit()
+  // solves for (the squashed titles, the marquee's pool and pace) is keyed to
+  // width alone, so a height-only change has nothing to recompute.
   let resizeTimer;
+  let lastFitWidth = window.innerWidth;
   window.addEventListener("resize", () => {
+    if (window.innerWidth === lastFitWidth) return;
+    lastFitWidth = window.innerWidth;
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(runFit, 100);
   });
