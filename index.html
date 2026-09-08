@@ -193,15 +193,38 @@
 
       <section id="guest" class="guest">
         <div class="guest__inner">
+          <!-- reads top to bottom as: what the event is (GUEST TALK + when),
+               then what happens at it, then who is giving it. The guest's
+               name/role/portrait/bio all belong to that last part, so they
+               sit together below the description rather than being introduced
+               before there's any context for them. -->
           <div class="guest__grid">
-            <div class="guest__heading">
-              <div class="guest__heading-row">
-                <h2 class="section-heading">GUEST&nbsp;TALK</h2>
-                <span class="guest__heading-date">(09/19 SAT)</span>
-              </div>
+            <div class="guest__heading-row">
+              <h2 class="section-heading">GUEST&nbsp;TALK</h2>
+              <!-- same technique as .hero__dates: each half is joined with
+                   &nbsp; so it can't break internally, and the <wbr> is the
+                   single place a wrap is allowed to land -->
+              <span class="guest__heading-date"
+                >09/19&nbsp;SAT&nbsp;<wbr />13:00&nbsp;—&nbsp;15:00</span
+              >
+            </div>
+
+            <p class="guest__desc" lang="ja">
+              今回の展示では学生の出展作品を対象としたゲストトーク・質疑応答の後、緒方氏による公開講評を行います。テクノロジーと人間、その「ちょうどいい距離感」を考える時間になればと思います。
+            </p>
+
+            <!-- the span is the flex item the dividing rule runs up
+                 against — see .guest__profile-title in css/style.css -->
+            <h3 class="guest__profile-title" lang="ja">
+              <span>ゲストについて</span>
+            </h3>
+
+            <div class="guest__profile">
               <div class="guest__name-row">
                 <div class="guest__name-identity">
-                  <h3 class="guest__name" lang="ja">緒方壽人</h3>
+                  <!-- h4, under the h3 above: the guest is the subject of
+                       that ゲストについて subsection, not a peer of it -->
+                  <h4 class="guest__name" lang="ja">緒方壽人</h4>
                   <span class="guest__name-reading">(おがた ひさと)</span>
                 </div>
                 <div class="social-links">
@@ -229,16 +252,7 @@
                 </div>
               </div>
               <p class="guest__role" lang="ja">Takram デザインエンジニア</p>
-            </div>
 
-            <div class="guest__photo">
-              <img
-                src="static/person_hisato-ogata.png"
-                alt="Portrait of Hisato Ogata"
-              />
-            </div>
-
-            <div class="guest__body">
               <p class="guest__bio" lang="ja">
                 デザイン、エンジニアリング、アート、サイエンスまで幅広く領域横断的な活動を行うデザインエンジニア。東京大学工学部卒業後、国際情報科学芸術アカデミー(IAMAS)、LEADING
                 EDGE
@@ -247,41 +261,13 @@
                 by
                 ORBISのブランディングと体験デザイン、2025大阪・関西万博シグネチャーパビリオン「いのち動的平衡館」展示ディレクターなど。2015年よりグッドデザイン賞審査員。近著に『コンヴィヴィアル・テクノロジー』。21年から長野県の御代田町に移住し、テクノロジーと人間と自然のちょうどよいバランスを考える日々。
               </p>
+            </div>
 
-              <p class="guest__desc" lang="ja">
-                今回の展示では学生の出展作品を対象としたゲストトーク・質疑応答の後、緒方氏による公開講評を行います。テクノロジーと人間、その「ちょうどいい距離感」を考える時間になればと思います。
-              </p>
-
-              <!-- inside .guest__body (not a sibling of .guest__grid): on
-                   desktop that keeps it confined to the text column next to
-                   .guest__photo; on mobile .guest__body already spans the
-                   full row, so the table does too without any extra rule -->
-              <table class="schedule">
-                <colgroup>
-                  <col class="schedule__col-time" />
-                  <col />
-                </colgroup>
-                <thead>
-                  <tr>
-                    <th lang="ja">時間</th>
-                    <th lang="ja">内容</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>13:10 – 13:40</td>
-                    <td lang="ja">活動紹介</td>
-                  </tr>
-                  <tr>
-                    <td>13:40 – 14:00</td>
-                    <td lang="ja">質疑応答</td>
-                  </tr>
-                  <tr>
-                    <td>14:00 – 15:00</td>
-                    <td lang="ja">公開講評</td>
-                  </tr>
-                </tbody>
-              </table>
+            <div class="guest__photo">
+              <img
+                src="static/person_hisato-ogata.png"
+                alt="Portrait of Hisato Ogata"
+              />
             </div>
           </div>
         </div>

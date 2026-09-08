@@ -42,8 +42,7 @@ body {
    centered on purpose, and its full-width box already keeps both centers coincident. */
 .hero__venue,
 .section-heading,
-.artist__name,
-.past-works__heading {
+.artist__name {
   display: inline-block;
   transform: scaleX(0.5);
   transform-origin: left;
@@ -51,8 +50,7 @@ body {
 
 .hero__venue,
 .section-heading,
-.artist__name,
-.past-works__heading {
+.artist__name {
   display: block;
 }
 
@@ -231,7 +229,7 @@ a {
 /* same max-width + centering as .about__inner, so hero content lines up
    with the rest of the page's text column at wide viewports */
 .hero__info-inner {
-  max-width: 80rem;
+  max-width: 70rem;
   margin: 0 auto;
 }
 
@@ -299,7 +297,7 @@ a {
 }
 
 .about__inner {
-  max-width: 80rem;
+  max-width: 70rem;
   margin: 0 auto;
 }
 
@@ -356,26 +354,85 @@ a {
 }
 
 .guest__inner {
-  max-width: 80rem;
+  max-width: 70rem;
   margin: 0 auto;
 }
 
-/* title/name (+ links) on the left, a portrait photo top-right stretched to
-   match the full height of the text column — heading stacked above body,
-   both in a single left column, with the photo spanning both rows */
+/* Three stacked bands: the GUEST TALK headline and its date, then what the
+   talk actually is, then the guest themselves. Only that last band is split
+   into two columns — name/role/bio on the left, portrait on the right —
+   because the photo belongs to the profile, not to the description above it.
+   Title and description run the full width so the section opens with the
+   event rather than with a face and a name the reader has no context for yet.
+
+   That left half is ONE grid item (.guest__profile wraps all of it) rather
+   than a stack of separately-placed rows: split across two rows, the portrait
+   spanning them is taller than the name/role above the bio, and the grid
+   distributed that surplus into the gap between them — leaving the bio
+   stranded halfway down the section. */
 .guest__grid {
   display: grid;
-  grid-template-columns: 1fr auto;
+  /* the photo's column is sized here rather than by the photo itself: its
+     own <img> is positioned out of flow (see .guest__photo) so it can be
+     capped to the text's height, which leaves an auto track nothing to
+     measure and collapses it to nothing */
+  grid-template-columns: clamp(12rem, 26vw, 25rem) 1fr;
   grid-template-areas:
-    "heading photo"
-    "body    photo";
+    "title    title"
+    "desc     desc"
+    "subtitle subtitle"
+    "photo    profile";
   column-gap: clamp(1.5rem, 4vw, 3rem);
   row-gap: clamp(1.5rem, 4vw, 2.5rem);
   align-items: stretch;
 }
 
-.guest__heading {
-  grid-area: heading;
+.guest__heading-row {
+  grid-area: title;
+}
+
+/* A band label that doubles as the divider above what it labels: the text
+   sits at the left, vertically centred on a rule that picks up after it and
+   runs to the end of the inner column.
+
+   The rule is the ::after, flexed to fill whatever the text leaves — which
+   works precisely because these labels are set in the body face. The squashed
+   display type used elsewhere could not do this: it reserves a layout box
+   twice as wide as the glyphs it paints, so the rule would start half a
+   label's width past the text. */
+.guest__profile-title,
+.past-works__heading {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 0;
+  line-height: 1;
+}
+
+.guest__profile-title::after,
+.past-works__heading::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.guest__profile-title {
+  grid-area: subtitle;
+}
+
+/* matched to .guest__heading-date — same face and size, so the two pieces of
+   supporting text in this section read as the same level */
+.guest__profile-title span,
+.past-works__heading span {
+  font-family: var(--font-body);
+  font-weight: 400;
+  color: var(--red);
+  font-size: clamp(1rem, 2.4vw, 1.5rem);
+}
+
+.guest__profile {
+  grid-area: profile;
 }
 
 /* holds GUEST TALK + its date. Not flex: .section-heading's own layout
@@ -383,29 +440,42 @@ a {
    the top of this file — so a flex sibling would see it as far wider than
    it looks and get pushed onto its own line. Absolutely positioning the
    date against this row instead pins it to the row's actual rendered
-   width, independent of that oversized box. Half of .section-heading's own
-   2.5rem margin — scoped to guest only, Exhibitors and the artist page
-   keep the full amount */
+   width, independent of that oversized box. No bottom margin: this is its
+   own grid band now, so .guest__grid's row-gap does that spacing. */
 .guest__heading-row {
   position: relative;
-  margin: 0 0 1.25rem;
+  margin: 0;
 }
 
 .guest__heading-row .section-heading {
   margin: 0;
 }
 
-/* matches .guest__name's font/color/size, regular weight so the date reads
-   lighter than the headline it's positioned against */
+/* sized to match .guest__name-reading (the same clamp inputs), not
+   .guest__name: this is supporting detail next to the GUEST TALK headline,
+   and at the name's size it competed with it */
 .guest__heading-date {
   position: absolute;
   right: 0;
-  bottom: 0;
+  /* centred against the headline's box rather than sitting on its bottom
+     edge. translateY (not top:50% alone) because the element's own height
+     varies — one line or two, depending on whether the <wbr> below wraps */
+  top: 50%;
+  transform: translateY(-50%);
   font-family: var(--font-body);
   font-weight: 400;
   color: var(--white);
-  font-size: clamp(1.4rem, 3.2vw, 2rem);
-  white-space: nowrap;
+  font-size: clamp(1rem, 2.4vw, 1.5rem);
+  /* Deliberately NOT white-space: nowrap — that makes the <wbr> in the markup
+     inert, leaving this stuck on one line at every width. The &nbsp;-joined
+     halves are what keep it from breaking anywhere except that <wbr>.
+
+     Being absolutely positioned, it measures itself against the whole row and
+     so would stay on one line right down to 320px, where it ends up ~14px
+     from the headline's glyphs. The cap forces the wrap just before that gets
+     uncomfortable — 7rem is roughly what GUEST TALK paints to at these sizes
+     (it's squashed to half its layout box) plus room to breathe. */
+  max-width: calc(100% - 7rem);
 }
 
 .guest__name-row {
@@ -419,32 +489,49 @@ a {
 /* groups the name with its furigana so name-row's space-between still just
    sees two items (this group vs .social-links) — also what mobile unwraps
    (display: contents) to place the name and reading in separate rows */
+/* center, not baseline: the furigana is a good deal smaller than the name, so
+   sharing a baseline left it sitting low against it. Desktop-only in effect —
+   the mobile rule below unwraps this with display: contents, which takes the
+   box (and this alignment with it) out of the layout entirely. */
 .guest__name-identity {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   flex-wrap: wrap;
 }
 
+/* Height comes from the text beside it, not from the image: align-self
+   stretch fills the profile band, which the name/role/bio alone define. It
+   used to carry aspect-ratio 3/4 and align-self:start, so the portrait was
+   taller than everything next to it and left the column below the bio empty.
+   position:relative + the absolutely positioned <img> below is what makes
+   that possible — an in-flow image would contribute its own intrinsic height
+   back to the row and re-inflate the very band it's being measured against.
+   Its width comes from the grid column (see .guest__grid) for the same
+   reason. object-fit:cover means capping the height re-crops rather than
+   squashing the portrait. */
 .guest__photo {
   grid-area: photo;
-  aspect-ratio: 3 / 4;
+  position: relative;
   width: 100%;
-  max-width: 25rem;
-  height: 100%;
-  justify-self: end;
-  align-self: start;
+  align-self: stretch;
+  justify-self: start;
   overflow: hidden;
   background: #0a0a0a;
 }
 
 .guest__photo img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
   filter: grayscale(1) contrast(1.05);
 }
 
-.guest__body {
+/* only takes effect at the mobile breakpoint, where .guest__profile's
+   display: contents makes this a direct grid item — on desktop it's just a
+   paragraph inside .guest__profile and the placement is ignored */
+.guest__bio {
   grid-area: body;
 }
 
@@ -475,48 +562,28 @@ a {
   font-size: 0.95rem;
 }
 
-.guest__bio,
-.guest__desc {
+.guest__bio {
   margin: 0 0 1.25rem;
   font-size: 0.95rem;
   line-height: 1.75;
   color: var(--white);
 }
 
+/* What actually happens on the day, sitting directly under the headline as
+   the section's opening statement. It gets the same emphasis device
+   .about__text--lead uses (heavier and a size up) — it was grey and last,
+   below the biography, which read as a footnote to the guest rather than the
+   point of the event. Not set in red: red is this palette's label colour
+   (.guest__role, the headings), and a full paragraph of it neither reads as
+   a label nor holds up as body text at this size on black. Margins are left
+   to .guest__grid's row-gap, since this is one of its bands. */
 .guest__desc {
-  color: var(--grey);
-}
-
-.schedule {
-  width: 100%;
-  /* auto layout only sizes columns to their own content, which for short
-     times/labels like these falls well short of 100% — fixed (together
-     with .schedule__col-time below) makes the declared width actually
-     apply, instead of leaving unclaimed space (and no border-bottom) past
-     wherever the content-sized columns happened to end */
-  table-layout: fixed;
-  border-collapse: collapse;
-  margin: 1.5rem 0 0;
-  font-size: 0.85rem;
-}
-
-/* percentage width on td/th themselves doesn't reliably drive fixed-layout
-   column sizing across browsers — a <colgroup> col is what the table
-   layout algorithm actually sizes columns from */
-.schedule__col-time {
-  width: 50%;
-}
-
-.schedule th,
-.schedule td {
-  text-align: left;
-  padding: 0.6em 1em 0.6em 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.25);
-}
-
-.schedule th {
-  color: var(--red);
-  font-weight: 500;
+  grid-area: desc;
+  margin: 0;
+  font-size: clamp(1.05rem, 1.9vw, 1.4rem);
+  font-weight: 700;
+  line-height: 1.7;
+  color: var(--white);
 }
 
 .social-links {
@@ -561,7 +628,7 @@ a {
      layout width to size against, off-center and too narrow. An explicit
      width sidesteps that resolution entirely, flex item or not. */
   width: 100%;
-  max-width: 80rem;
+  max-width: 70rem;
   margin: 0 auto;
 }
 
@@ -672,7 +739,7 @@ a {
 }
 
 .footer__inner {
-  max-width: 80rem;
+  max-width: 70rem;
   margin: 0 auto;
 }
 
@@ -836,12 +903,15 @@ a {
   color: var(--red);
 }
 
+/* the same clamp as .section-heading: this is the artist page's own top-level
+   heading, so it should carry the weight EXHIBITORS / GUEST TALK do on the
+   main page — it was a step smaller at clamp(2rem, 6vw, 3.5rem) */
 .artist__name {
   width: fit-content;
   font-family: var(--font-display);
   font-weight: 400;
   color: var(--red);
-  font-size: clamp(2rem, 6vw, 3.5rem);
+  font-size: clamp(2.75rem, 7vw, 4.5rem);
   line-height: 1.3;
   margin: 0 0 0.6rem;
 }
@@ -936,21 +1006,14 @@ a {
 
 /* ---------- past works (過去作品) ---------- */
 
+/* no border-top of its own any more — the heading below carries the dividing
+   rule, with the label sitting centred on it (see .guest__profile-title) */
 .past-works {
   margin-top: clamp(3rem, 8vw, 5rem);
-  border-top: 1px solid rgba(255, 255, 255, 0.25);
-  padding-top: clamp(1.5rem, 4vw, 2.5rem);
 }
 
-/* same squashed display treatment and size as .artist__name above it */
 .past-works__heading {
-  width: fit-content;
-  margin: 0 0 1.5rem;
-  font-family: var(--font-display);
-  font-weight: 400;
-  color: var(--red);
-  font-size: clamp(2rem, 6vw, 3.5rem);
-  line-height: 1.3;
+  margin-bottom: clamp(1.5rem, 4vw, 2.5rem);
 }
 
 /* one work per row: a full-width image with its caption beneath */
@@ -1137,21 +1200,25 @@ a {
     justify-self: center;
   }
 
-  /* .guest__heading bundles title+name-row+role, and .guest__name-row /
+  /* .guest__profile bundles name-row+role, and .guest__name-row /
      .guest__name-identity each bundle two more things — unwrapped here so
      every piece becomes an individually placeable item of .guest__grid
      below, instead of moving as three fixed chunks. */
-  .guest__heading,
+  .guest__profile,
   .guest__name-row,
   .guest__name-identity {
     display: contents;
   }
 
-  /* GUEST TALK > photo > name+role > furigana+social > everything else */
+  /* same three bands as desktop, with the profile's own half stacked rather
+     than side by side: GUEST TALK > what the talk is > photo > name+role >
+     furigana+social > bio */
   .guest__grid {
     grid-template-columns: 1fr auto;
     grid-template-areas:
       "title title"
+      "desc desc"
+      "subtitle subtitle"
       "photo photo"
       "name role"
       "reading social"
@@ -1159,8 +1226,16 @@ a {
     row-gap: 0.75rem;
   }
 
-  .guest__grid .guest__heading-row {
-    grid-area: title;
+  /* the uniform 0.75rem row-gap here is tuned for the tight name/role/social
+     rows below; as a divider this needs room on both sides of its rule */
+  .guest__profile-title {
+    margin: 0.75rem 0;
+  }
+
+  /* the uniform 0.75rem row-gap is tuned for the name/role/social rows that
+     sit in a tight block below; the two opening bands need their own air */
+  .guest__desc {
+    margin: 0.5rem 0 1.25rem;
   }
 
   /* full-bleed: same technique as .artist__photo — negative margins cancel
@@ -1211,10 +1286,6 @@ a {
     grid-area: social;
     justify-self: end;
     align-self: start;
-  }
-
-  .guest__body {
-    grid-area: body;
   }
 
   /* names with a space break to two lines here (js/exhibitor-web.js always
