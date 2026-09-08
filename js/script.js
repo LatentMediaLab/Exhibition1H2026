@@ -45,6 +45,27 @@ function fitSquashedTitles() {
   });
 }
 
+// Shrinks .artist__name's BOX to the width of the glyphs it actually paints.
+//
+// The squash is a paint-time transform, so the element still reserves a layout
+// box twice as wide as what's drawn (the same phantom width the comment at the
+// top of css/style.css describes). Everywhere else that box is harmless — it's
+// a block heading with nothing beside it — but .artist__name-row is a wrapping
+// flex line, and flex measures the phantom width, not the glyphs. The social
+// links were breaking onto their own line with visible room still left beside
+// the name: at 390px, 莉山 (A) paints 85px and the links need 206px, which fits
+// the 358px row, but the browser was measuring 170px for the name and wrapping.
+//
+// transform-origin is left, so the painted glyphs occupy exactly the left half
+// of that box — halving the width makes it bound them exactly.
+function fitSquashedNames() {
+  document.querySelectorAll(".artist__name").forEach((el) => {
+    el.style.width = ""; // measure unconstrained, and stay idempotent on resize
+    const natural = el.scrollWidth;
+    if (natural > 0) el.style.width = natural / 2 + "px";
+  });
+}
+
 // Keeps the closing marquee's question text sized off the hero title's
 // visual size, reading the size fitSquashedTitles() just solved for it.
 // artist.html has no real .hero__title to read from, so it builds an
@@ -256,6 +277,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // work out how many the viewport needs
   const runFit = () => {
     fitSquashedTitles();
+    fitSquashedNames();
     startMarquee();
   };
 

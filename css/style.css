@@ -973,13 +973,16 @@ a {
    centers each item's *margin box*, so leaving it here would push the name's
    glyphs half that margin above the links */
 .artist__name-row .artist__name {
-  min-width: 0;
   margin-bottom: 0;
-  /* squashed again, so the layout box is twice the glyphs actually drawn:
-     nowrap stops the name breaking across lines on metrics that no longer
-     match what's painted — at half width it always fits the space it's
-     given (and min-width:0 keeps that oversized box from forcing overflow) */
+  /* nowrap stops the name breaking across lines on metrics that no longer
+     match what's painted (it's squashed, so the two disagree) */
   white-space: nowrap;
+  /* fitSquashedNames() in js/script.js sets this element's width to the
+     glyphs' real painted width, so there's no longer slack to give away:
+     shrinking from here would push the name UNDER the links rather than
+     wrapping them to their own line, since nowrap text just overflows a
+     too-small box instead of reflowing inside it */
+  flex-shrink: 0;
 }
 
 /* fixed width, growing height: min-height (not aspect-ratio) sets the 3:4
