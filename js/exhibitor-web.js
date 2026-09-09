@@ -1,11 +1,15 @@
 // Floating "web" of exhibitor names on index.html, built from EXHIBITORS
 // (js/exhibitors-data.js). Each name drifts on its own, gently repelling the
-// others so labels don't overlap, and is linked by a redrawn-every-frame
-// line to its nearest neighbors — a star-constellation mesh rather than a
-// fixed graph or a hub-and-spoke pattern, so the web stays intact (every
-// node always has at least NEIGHBORS edges, from its own nearest-neighbor
-// search) as names float apart and back together, with no single node
-// required to anchor the rest.
+// others so labels don't overlap, and is joined to the others by lines
+// redrawn every frame as the names move — a star-constellation of threads
+// between people, not a chart.
+//
+// Those threads are a fixed graph now (see RELATIONSHIPS below), not the
+// nearest-neighbour mesh this used to draw. Lines that follow whoever happens
+// to be closest look like a constellation but mean nothing; these are the
+// actual relationships between the exhibitors, so which names are tied
+// together stays true no matter where they drift to.
+//
 // Any name can be picked up and dragged; releasing it eases it back to
 // wherever it was floating from before it was grabbed.
 //
@@ -88,65 +92,137 @@ document.addEventListener("DOMContentLoaded", () => {
   svg.setAttribute("aria-hidden", "true");
   container.insertBefore(svg, container.firstChild);
 
-  // Nearest-neighbor edges are recomputed every frame, so lines (and their
-  // paired gradients) are reused (repositioned/hidden) rather than created
-  // and destroyed each tick. Sized for the worst case: every node gets
-  // NEIGHBORS edges to itself, before dedup.
-  const NEIGHBORS = 2;
+  // ---- the threads ------------------------------------------------------
+  //
+  // Six of them. Five are things the exhibitors chose — a way of working they
+  // turn out to share — and each gets its own colour. The sixth is the one
+  // nobody chose: where they were born and where they have moved since. That
+  // one is drawn dashed, dimmer, and underneath the rest, because it is real
+  // but it isn't a decision.
+  //
+  // Deliberately unlabelled. A key would turn this into a diagram to be
+  // decoded; left alone it reads as what it is, a set of ties between people,
+  // and the ones that matter are legible anyway (two names the same colour
+  // are working on the same problem).
+  //
+  // Colours are lifted from the source map's palette, which was picked
+  // against white — these are the same hues carried onto black, where the
+  // originals went muddy.
+  const THREADS = {
+    // 装置をひらく — cutting into the mechanism that makes the image
+    apparatus: { color: "#9C94FF", opacity: 0.95, width: 1.25 },
+    // 観客を回路に入れる — the work isn't finished until someone enters it
+    circuit: { color: "#3BD79E", opacity: 0.95, width: 1.25 },
+    // リアルタイム上演 — made once, in the room, never twice the same
+    live: { color: "#FF7C42", opacity: 0.95, width: 1.25 },
+    // カテゴリーを引き直す — redrawing where human / nature / machine divide
+    category: { color: "#FF7AA6", opacity: 0.95, width: 1.25 },
+    // 規則が生成する — feeding rules to something non-human, and answering it
+    rules: { color: "#F2B03A", opacity: 0.95, width: 1.25 },
+    // 選んでいない線 — birthplace, and the moves since. Kept dimmer and
+    // thinner than the five above: it should sit under them, not compete.
+    given: { color: "#8A8A85", opacity: 0.5, width: 1, dash: "3 7", fade: "0.2" },
+  };
+
+  // 19 edges. Every exhibitor is tied to between three and seven others, so
+  // nobody floats unconnected and nothing has to be faked to keep the web
+  // whole — which is what the nearest-neighbour search used to be for.
+  const RELATIONSHIPS = [
+    // 選んでいない線 first, so the chosen threads draw over it
+    ["artist-02", "artist-09", "given"], // 長谷川 / TANDA — 草津市
+    ["artist-01", "artist-05", "given"], // 田中 / Fukuyo — 京都府
+    ["artist-03", "artist-08", "given"], // 富永 / soshi — 大阪府
+    ["artist-04", "artist-10", "given"], // 莉山 / Scott — 国外から日本へ
+    ["artist-07", "artist-10", "given"], // imechiumaya / Scott — 拠点を移して
+
+    ["artist-10", "artist-02", "apparatus"],
+    ["artist-10", "artist-01", "apparatus"],
+    ["artist-01", "artist-02", "apparatus"],
+
+    ["artist-04", "artist-05", "circuit"],
+    ["artist-05", "artist-06", "circuit"],
+    ["artist-06", "artist-04", "circuit"],
+
+    ["artist-08", "artist-09", "live"],
+    ["artist-09", "artist-10", "live"],
+    ["artist-10", "artist-08", "live"],
+
+    ["artist-03", "artist-07", "category"],
+    ["artist-07", "artist-04", "category"],
+    ["artist-04", "artist-03", "category"],
+
+    ["artist-06", "artist-01", "rules"],
+    ["artist-06", "artist-10", "rules"],
+  ];
+
   const defs = document.createElementNS(svgNS, "defs");
   svg.appendChild(defs);
 
+  const nodeIndexById = new Map(EXHIBITORS.map((artist, i) => [artist.id, i]));
+
   let gradientUid = 0;
-  const lines = Array.from({ length: nodes.length * NEIGHBORS }, () => {
+  const lines = RELATIONSHIPS.map(([fromId, toId, threadName]) => {
+    const i = nodeIndexById.get(fromId);
+    const j = nodeIndexById.get(toId);
+    const thread = THREADS[threadName];
+    // an edge naming someone who isn't in EXHIBITORS simply isn't drawn,
+    // rather than throwing and taking the whole web down with it
+    if (i === undefined || j === undefined || !thread) return null;
+
+    // Each line fades out towards both ends instead of stopping dead at the
+    // name — that's what keeps it reading as a drawn thread rather than a
+    // connector, and it stops ten labels' worth of lines converging into
+    // solid knots where they meet.
     const gradient = document.createElementNS(svgNS, "linearGradient");
-    gradient.id = `exhibitor-web-line-${gradientUid++}`;
+    gradient.id = `exhibitor-web-thread-${gradientUid++}`;
     gradient.setAttribute("gradientUnits", "userSpaceOnUse");
-    const stop1 = document.createElementNS(svgNS, "stop");
-    stop1.setAttribute("offset", "0%");
-    const stop2 = document.createElementNS(svgNS, "stop");
-    stop2.setAttribute("offset", "100%");
-    gradient.append(stop1, stop2);
+    [
+      ["0%", "0.1"],
+      ["50%", "1"],
+      ["100%", "0.1"],
+    ].forEach(([offset, alpha]) => {
+      const stop = document.createElementNS(svgNS, "stop");
+      stop.setAttribute("offset", offset);
+      stop.setAttribute("stop-color", thread.color);
+      stop.setAttribute("stop-opacity", alpha);
+      gradient.appendChild(stop);
+    });
     defs.appendChild(gradient);
 
     const line = document.createElementNS(svgNS, "line");
-    line.setAttribute("stroke-width", "1");
     line.setAttribute("stroke", `url(#${gradient.id})`);
+    line.setAttribute("stroke-width", thread.width);
+    line.setAttribute("stroke-opacity", thread.opacity);
+    if (thread.dash) line.setAttribute("stroke-dasharray", thread.dash);
     svg.appendChild(line);
-    return { line, gradient, stop1, stop2 };
+
+    return { i, j, line, gradient };
+  }).filter(Boolean);
+
+  // ---- influence --------------------------------------------------------
+  //
+  // How many threads a name is tied by, normalised to 0–1. It runs 3 to 7
+  // across the ten, and it's the only measure of standing the map itself
+  // offers, so it's what the physics below reads: the more threads a name
+  // carries, the more firmly it holds its place, and the further the loosely
+  // tied ones are free to roam around it.
+  //
+  // The source map warns that Scott Allen is structurally a hub (seven of the
+  // nineteen threads reach him) and that letting the picture fan out around
+  // him would contradict the point — an endless mutual remaking, not a centre
+  // with satellites. So influence is deliberately NOT wired to WHERE a name
+  // sits: placement stays random, and influence only decides how firmly each
+  // one holds whatever spot it landed on.
+  const degrees = nodes.map(() => 0);
+  lines.forEach(({ i, j }) => {
+    degrees[i]++;
+    degrees[j]++;
   });
-
-  // Each connection (by node-index pair, not by pooled <line> slot — a slot
-  // can render a different pair from one frame to the next) keeps whichever
-  // color pair it's first assigned, so the web doesn't flicker as it
-  // reconfigures. The two colors are always distinct. All variants of red,
-  // weighted so the pure red shows up most often and maroon is the rarest.
-  const LINE_COLORS = [
-    { color: "#ff0000", weight: 4 }, // red
-    { color: "#fa8072", weight: 3 }, // salmon red
-    { color: "#cc0000", weight: 2 }, // dark red
-    { color: "#660000", weight: 1 }, // maroon
-  ];
-  function weightedPick(pool) {
-    const total = pool.reduce((sum, c) => sum + c.weight, 0);
-    let r = Math.random() * total;
-    for (const c of pool) {
-      if (r < c.weight) return c;
-      r -= c.weight;
-    }
-    return pool[pool.length - 1];
-  }
-
-  const edgeColors = new Map();
-  function colorPairForEdge(key) {
-    let pair = edgeColors.get(key);
-    if (!pair) {
-      const first = weightedPick(LINE_COLORS);
-      const second = weightedPick(LINE_COLORS.filter((c) => c !== first));
-      pair = [first.color, second.color];
-      edgeColors.set(key, pair);
-    }
-    return pair;
-  }
+  const minDegree = Math.min(...degrees);
+  const degreeSpread = Math.max(...degrees) - minDegree || 1;
+  nodes.forEach((n, i) => {
+    n.influence = (degrees[i] - minDegree) / degreeSpread;
+  });
 
   // #exhibitorWeb now spans the full .exhibitors section (a sibling of
   // .exhibitors__inner, not nested in it) so there's room to drag names out
@@ -154,6 +230,105 @@ document.addEventListener("DOMContentLoaded", () => {
   // layout. innerColumn gives the initial scatter that narrower width; the
   // drag/float bounds themselves stay the full container everywhere else.
   const innerColumn = document.querySelector("#exhibitors .exhibitors__inner");
+
+  // Declared up here, not with the physics constants further down: the
+  // initial layout below runs during measure(), which is called before that
+  // block is reached — a const referenced from above its own declaration is
+  // a ReferenceError, not a hoisted undefined.
+  const MIN_GAP = 22; // px of clear space no two labels may close below
+  const SEPARATION_PASSES = 2; // re-runs per frame, so a name shoved out of
+  // one overlap doesn't get left sitting inside the next one
+
+  // Where the names start.
+  //
+  // Not a random scatter: the arrangement is solved from the threads
+  // themselves, so who ends up near whom means something. Names sharing a
+  // thread are drawn together and everything pushes everything else away,
+  // relaxed over a few hundred iterations — the standard way a graph is laid
+  // out, run once up front rather than every frame. Sharing a way of working
+  // puts two names close on the page; the five thread-triangles surface as
+  // loose clusters, and the lines have far less distance to cross, so the web
+  // reads instead of tangling.
+  //
+  // The starting scatter it relaxes FROM is deterministic (hashed off each
+  // name's index, not Math.random), so the same ten names always settle into
+  // the same arrangement. Reloading shouldn't reshuffle who is standing next
+  // to whom when that adjacency is the content.
+  function solveLayout(spawnLeft, spawnWidth, height) {
+    const ITERATIONS = 320;
+    const IDEAL = Math.min(spawnWidth, height) * 0.42; // rest length of a thread
+    const SPRING = 0.012; // pull along a thread
+    const PUSH = 0.9; // shove between any two names
+    const hash = (i) => {
+      const v = Math.sin(i * 127.1 + 311.7) * 43758.5453;
+      return v - Math.floor(v);
+    };
+
+    const pts = nodes.map((n, i) => ({
+      x: spawnLeft + hash(i) * Math.max(spawnWidth - n.w, 1),
+      y: hash(i + 97) * Math.max(height - n.h, 1),
+      w: n.w,
+      h: n.h,
+    }));
+
+    for (let it = 0; it < ITERATIONS; it++) {
+      lines.forEach(({ i, j }) => {
+        const a = pts[i];
+        const b = pts[j];
+        const dx = b.x - a.x;
+        const dy = b.y - a.y;
+        const dist = Math.hypot(dx, dy) || 0.001;
+        const pull = (dist - IDEAL) * SPRING;
+        const fx = (dx / dist) * pull;
+        const fy = (dy / dist) * pull;
+        a.x += fx;
+        a.y += fy;
+        b.x -= fx;
+        b.y -= fy;
+      });
+
+      for (let i = 0; i < pts.length; i++) {
+        for (let j = i + 1; j < pts.length; j++) {
+          const a = pts[i];
+          const b = pts[j];
+          const dx = b.x - a.x;
+          const dy = b.y - a.y;
+          const dist = Math.hypot(dx, dy) || 0.001;
+          // measured between label boxes, not centres — see separate()
+          const want = (a.w + b.w) / 2 + MIN_GAP;
+          if (dist < want) {
+            const force = ((want - dist) / dist) * PUSH;
+            a.x -= dx * force * 0.5;
+            a.y -= dy * force * 0.5;
+            b.x += dx * force * 0.5;
+            b.y += dy * force * 0.5;
+          }
+        }
+      }
+
+      pts.forEach((p) => {
+        p.x = Math.min(Math.max(p.x, spawnLeft), spawnLeft + spawnWidth - p.w);
+        p.y = Math.min(Math.max(p.y, 0), Math.max(height - p.h, 0));
+      });
+    }
+
+    // The relaxation only cares about distances, so the shape it settles on
+    // can sit anywhere — it kept landing against one side with the other half
+    // of the section empty. Recentre the whole constellation on what it
+    // actually occupies.
+    const left = Math.min(...pts.map((p) => p.x));
+    const right = Math.max(...pts.map((p) => p.x + p.w));
+    const top = Math.min(...pts.map((p) => p.y));
+    const bottom = Math.max(...pts.map((p) => p.y + p.h));
+    const shiftX = spawnLeft + (spawnWidth - (right - left)) / 2 - left;
+    const shiftY = (height - (bottom - top)) / 2 - top;
+    pts.forEach((p) => {
+      p.x += shiftX;
+      p.y += shiftY;
+    });
+
+    return pts;
+  }
 
   function measure() {
     const rect = container.getBoundingClientRect();
@@ -164,17 +339,30 @@ document.addEventListener("DOMContentLoaded", () => {
     nodes.forEach((n) => {
       n.w = n.el.offsetWidth;
       n.h = n.el.offsetHeight;
+    });
+
+    const unplaced = nodes.some((n) => !n.placed);
+    const solved = unplaced
+      ? solveLayout(spawnLeft, spawnWidth, rect.height)
+      : null;
+
+    nodes.forEach((n, i) => {
       const maxX = Math.max(rect.width - n.w, 0);
       const maxY = Math.max(rect.height - n.h, 0);
       if (!n.placed) {
-        // starts scattered within the narrower .exhibitors__inner column
-        const spawnMaxX = Math.max(spawnWidth - n.w, 0);
-        n.x = Math.min(spawnLeft + Math.random() * spawnMaxX, maxX);
-        n.y = Math.random() * maxY;
+        n.x = Math.min(Math.max(solved[i].x, 0), maxX);
+        n.y = Math.min(Math.max(solved[i].y, 0), maxY);
+        // where the graph put it is the spot gravity keeps it near
+        n.homeX = n.x;
+        n.homeY = n.y;
         n.placed = true;
-      } else if (!n.dragging) {
-        n.x = Math.min(n.x, maxX);
-        n.y = Math.min(n.y, maxY);
+      } else {
+        n.homeX = Math.min(n.homeX, maxX);
+        n.homeY = Math.min(n.homeY, maxY);
+        if (!n.dragging) {
+          n.x = Math.min(n.x, maxX);
+          n.y = Math.min(n.y, maxY);
+        }
       }
     });
   }
@@ -182,7 +370,18 @@ document.addEventListener("DOMContentLoaded", () => {
   measure();
   window.addEventListener("resize", measure);
 
-  const WANDER = 0.06; // random per-frame nudge, keeps the drift from ever fully settling
+  const WANDER = 0.13; // random per-frame nudge, keeps the drift from ever fully settling
+  // How much of that nudge the most-connected name loses: at 0.85 it drifts on
+  // 15% of the wander the least-connected gets. Not 1 — nothing should freeze.
+  const WANDER_INFLUENCE = 0.85;
+  const GRAVITY_MIN = 0.00024; // pull home for the loosest-tied name
+  const GRAVITY_MAX = 0.0075; // ...and for the most tied. Still small numbers:
+  // this is a slow settle over seconds, not a snap back into formation. The
+  // gap between them is what carries the reading — a name tied by seven
+  // threads sits almost still while one tied by three visibly roams, so the
+  // web's structure is legible from the motion alone, without labelling it.
+  const MASS_INFLUENCE = 2.5; // heaviest name is 3.5x as hard to shove as the lightest
+  const massOf = (n) => 1 + MASS_INFLUENCE * n.influence;
   // Return spring is deliberately underdamped — it overshoots the target by
   // ~28%, swings back past it the other way, then settles in well under a
   // second: two clear bounces, not the slow, heavily-damped glide the
@@ -221,8 +420,18 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
 
-      n.vx += (Math.random() - 0.5) * WANDER;
-      n.vy += (Math.random() - 0.5) * WANDER;
+      // gravity back towards where it started, and a wander that fights it.
+      // Both are scaled by influence, from opposite ends: a name carrying
+      // seven threads is held firmly and barely drifts, one carrying three
+      // is only loosely tethered and roams. The pull is small enough that
+      // even the most anchored name is never quite still.
+      const pull = GRAVITY_MIN + (GRAVITY_MAX - GRAVITY_MIN) * n.influence;
+      n.vx += (n.homeX - n.x) * pull;
+      n.vy += (n.homeY - n.y) * pull;
+
+      const wander = WANDER * (1 - WANDER_INFLUENCE * n.influence);
+      n.vx += (Math.random() - 0.5) * wander;
+      n.vy += (Math.random() - 0.5) * wander;
     });
 
     for (let i = 0; i < nodes.length; i++) {
@@ -237,13 +446,15 @@ document.addEventListener("DOMContentLoaded", () => {
           const force = ((minDist - dist) / minDist) * REPEL_STRENGTH;
           const fx = (dx / dist) * force;
           const fy = (dy / dist) * force;
+          // influence is mass here too: when two names crowd each other, the
+          // more heavily tied one gives less ground
           if (!a.dragging) {
-            a.vx -= fx;
-            a.vy -= fy;
+            a.vx -= fx / massOf(a);
+            a.vy -= fy / massOf(a);
           }
           if (!b.dragging) {
-            b.vx += fx;
-            b.vy += fy;
+            b.vx += fx / massOf(b);
+            b.vy += fy / massOf(b);
           }
         }
       }
@@ -258,6 +469,76 @@ document.addEventListener("DOMContentLoaded", () => {
       const bottomEdge = rect.height - EDGE_MARGIN - n.h;
       if (n.y > bottomEdge) n.vy -= (n.y - bottomEdge) * EDGE_STRENGTH;
     });
+  }
+
+  // A hard floor on how close two names may sit, applied to positions after
+  // the forces have had their say.
+  //
+  // The soft repulsion above can be argued with — and now that each name is
+  // also being pulled home by gravity, it loses that argument whenever two
+  // homes happen to land near each other, which is how labels ended up
+  // touching. This doesn't negotiate: overlapping boxes are moved apart, and
+  // their HOMES are moved with them, so gravity stops pulling them back into
+  // each other and the arrangement relaxes into one that has room for
+  // everybody instead of fighting itself forever.
+  //
+  // Boxes, not radii: these are text labels of very different widths, and a
+  // circle big enough to clear "Kazuki Fukuyo" sideways would hold everything
+  // absurdly far apart vertically.
+  function separate() {
+    const rect = container.getBoundingClientRect();
+
+    for (let pass = 0; pass < SEPARATION_PASSES; pass++) {
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const a = nodes[i];
+          const b = nodes[j];
+          const dx = b.x + b.w / 2 - (a.x + a.w / 2);
+          const dy = b.y + b.h / 2 - (a.y + a.h / 2);
+          const overlapX = (a.w + b.w) / 2 + MIN_GAP - Math.abs(dx);
+          const overlapY = (a.h + b.h) / 2 + MIN_GAP - Math.abs(dy);
+          if (overlapX <= 0 || overlapY <= 0) continue; // already clear
+
+          // a dragged name is pinned to the pointer, so the other one yields
+          // the whole distance; otherwise the heavier (better-connected) name
+          // gives less ground, as it does under the soft repulsion
+          const ma = massOf(a);
+          const mb = massOf(b);
+          let shareA = mb / (ma + mb);
+          let shareB = 1 - shareA;
+          if (a.dragging) {
+            shareA = 0;
+            shareB = 1;
+          } else if (b.dragging) {
+            shareA = 1;
+            shareB = 0;
+          }
+
+          // push along whichever axis needs the least movement to clear
+          if (overlapX < overlapY) {
+            const dir = dx < 0 ? 1 : -1;
+            nudge(a, dir * overlapX * shareA, 0, rect);
+            nudge(b, -dir * overlapX * shareB, 0, rect);
+          } else {
+            const dir = dy < 0 ? 1 : -1;
+            nudge(a, 0, dir * overlapY * shareA, rect);
+            nudge(b, 0, -dir * overlapY * shareB, rect);
+          }
+        }
+      }
+    }
+  }
+
+  function nudge(n, dx, dy, rect) {
+    if (n.dragging || (!dx && !dy)) return;
+    const maxX = Math.max(rect.width - n.w, 0);
+    const maxY = Math.max(rect.height - n.h, 0);
+    n.x = Math.min(Math.max(n.x + dx, 0), maxX);
+    n.y = Math.min(Math.max(n.y + dy, 0), maxY);
+    // the home moves too — otherwise gravity spends forever hauling this name
+    // back into the neighbour it was just separated from
+    n.homeX = Math.min(Math.max(n.homeX + dx, 0), maxX);
+    n.homeY = Math.min(Math.max(n.homeY + dy, 0), maxY);
   }
 
   function integrate() {
@@ -278,50 +559,26 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // Which names are joined never changes — only where they are. So this just
+  // moves each thread's endpoints onto its two names, with no edge search
+  // and no colour bookkeeping (both of which the old nearest-neighbour
+  // version needed to stop the web flickering as it reconfigured).
   function drawLines() {
     const centers = nodes.map((n) => ({ x: n.x + n.w / 2, y: n.y + n.h / 2 }));
-    const edges = new Set();
-    const addEdge = (i, j) => edges.add(i < j ? `${i}-${j}` : `${j}-${i}`);
-
-    // every node connects to its own NEIGHBORS nearest others — no fixed
-    // hub, but every node is guaranteed at least NEIGHBORS edges this way,
-    // so nothing ever ends up floating with no connection at all
-    centers.forEach((c, i) => {
-      centers
-        .map((other, j) => ({
-          j,
-          d: i === j ? Infinity : Math.hypot(other.x - c.x, other.y - c.y),
-        }))
-        .sort((a, b) => a.d - b.d)
-        .slice(0, NEIGHBORS)
-        .forEach(({ j }) => addEdge(i, j));
-    });
-
-    const edgeList = Array.from(edges);
-    lines.forEach(({ line, gradient, stop1, stop2 }, idx) => {
-      const key = edgeList[idx];
-      if (!key) {
-        line.setAttribute("stroke-opacity", "0");
-        return;
-      }
-      const [i, j] = key.split("-").map(Number);
+    lines.forEach(({ i, j, line, gradient }) => {
       const p1 = centers[i];
       const p2 = centers[j];
       line.setAttribute("x1", p1.x);
       line.setAttribute("y1", p1.y);
       line.setAttribute("x2", p2.x);
       line.setAttribute("y2", p2.y);
-      line.setAttribute("stroke-opacity", "0.55");
 
-      // gradient runs along the same segment as the line itself, so it
-      // tracks the line's current direction instead of a fixed orientation
+      // the gradient runs along the same segment as the line, so its fade
+      // tracks the thread's current direction rather than a fixed one
       gradient.setAttribute("x1", p1.x);
       gradient.setAttribute("y1", p1.y);
       gradient.setAttribute("x2", p2.x);
       gradient.setAttribute("y2", p2.y);
-      const [colorA, colorB] = colorPairForEdge(key);
-      stop1.setAttribute("stop-color", colorA);
-      stop2.setAttribute("stop-color", colorB);
     });
   }
 
@@ -392,6 +649,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function step() {
     applyForces();
     integrate();
+    separate();
     drawLines();
     raf = requestAnimationFrame(step);
   }
