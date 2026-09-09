@@ -435,15 +435,22 @@ a {
   grid-area: profile;
 }
 
-/* holds GUEST TALK + its date. Not flex: .section-heading's own layout
-   width is its UNSQUASHED (2x visual) size — see the squash comment near
-   the top of this file — so a flex sibling would see it as far wider than
-   it looks and get pushed onto its own line. Absolutely positioning the
-   date against this row instead pins it to the row's actual rendered
-   width, independent of that oversized box. No bottom margin: this is its
-   own grid band now, so .guest__grid's row-gap does that spacing. */
+/* GUEST TALK on the left, the event's date/time and speakers on the right.
+   This is a plain flex row now. It used to have to position the date
+   absolutely, because .section-heading's layout width is its UNSQUASHED (2x
+   visual) size — see the squash comment near the top of this file — so a flex
+   sibling would be shoved onto its own line by a box far wider than the
+   glyphs. fitSquashedBoxes() in js/script.js trims that box to what's
+   actually painted, so the two can sit in a row honestly, size the row
+   between them, and wrap onto separate lines only when they really don't fit.
+   No bottom margin: this is its own grid band, so .guest__grid's row-gap
+   handles that spacing. */
 .guest__heading-row {
-  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1.5rem;
   margin: 0;
 }
 
@@ -451,31 +458,60 @@ a {
   margin: 0;
 }
 
+/* auto margin, not just justify-content: when this wraps onto its own line
+   below the headline, space-between would leave it at the start of that line
+   — the auto margin keeps it against the right edge either way */
+.guest__heading-meta {
+  margin-left: auto;
+  text-align: right;
+  /* so a long speaker list breaks onto another line instead of running
+     sideways towards the headline. Above what the current three names need,
+     so it only bites when the list actually grows. */
+  max-width: min(100%, 32rem);
+}
+
 /* sized to match .guest__name-reading (the same clamp inputs), not
    .guest__name: this is supporting detail next to the GUEST TALK headline,
    and at the name's size it competed with it */
 .guest__heading-date {
-  position: absolute;
-  right: 0;
-  /* centred against the headline's box rather than sitting on its bottom
-     edge. translateY (not top:50% alone) because the element's own height
-     varies — one line or two, depending on whether the <wbr> below wraps */
-  top: 50%;
-  transform: translateY(-50%);
+  display: block;
   font-family: var(--font-body);
   font-weight: 400;
   color: var(--white);
   font-size: clamp(1rem, 2.4vw, 1.5rem);
   /* Deliberately NOT white-space: nowrap — that makes the <wbr> in the markup
      inert, leaving this stuck on one line at every width. The &nbsp;-joined
-     halves are what keep it from breaking anywhere except that <wbr>.
+     halves are what keep it from breaking anywhere except that <wbr>. It no
+     longer needs a width cap to stay off the headline: the flex row above
+     keeps the two apart, and wraps them onto separate lines when it can't. */
+}
 
-     Being absolutely positioned, it measures itself against the whole row and
-     so would stay on one line right down to 320px, where it ends up ~14px
-     from the headline's glyphs. The cap forces the wrap just before that gets
-     uncomfortable — 7rem is roughly what GUEST TALK paints to at these sizes
-     (it's squashed to half its layout box) plus room to breathe. */
-  max-width: calc(100% - 7rem);
+/* the people speaking, under the date. Smaller and greyed — this is the
+   finest detail in the heading, below both the headline and the time it
+   announces. Free to run onto as many lines as it needs: the cap is what
+   makes that happen rather than the list growing sideways forever, and
+   right-aligned text stays tidy across however many lines it takes. */
+.guest__speakers {
+  margin: 0.5rem 0 0;
+  max-width: 100%;
+  font-size: clamp(0.8rem, 1.6vw, 1rem);
+  line-height: 1.7;
+  color: var(--grey);
+}
+
+.guest__speakers-label {
+  margin-right: 0.6em;
+  letter-spacing: 0.05em;
+}
+
+/* not underlined, by request — the colour shift on hover is the only
+   affordance marking these two as links */
+.guest__speakers-link {
+  transition: color 0.15s ease;
+}
+
+.guest__speakers-link:hover {
+  color: var(--red);
 }
 
 .guest__name-row {
@@ -1308,6 +1344,25 @@ a {
      of table display entirely, silently disabling table-layout: fixed and
      the <colgroup> column widths above. table-layout: fixed already
      guarantees this can't overflow its container regardless. */
+}
+
+/* Below roughly here the date/speakers block no longer fits beside GUEST TALK
+   and takes a line of its own (measured: still beside at 512px, wrapped at
+   508px). Once it does, there's no headline to its left to sit opposite any
+   more — so it aligns to the same left edge as everything else instead of
+   hanging off a right edge that reads as arbitrary, and takes a little more
+   air under the headline than the flex row-gap alone gives it.
+
+   The exact figure depends on how long the speaker list is: add enough names
+   and the row will start wrapping above this width, leaving a band where the
+   block is on its own line but still right-aligned. Re-measure if that list
+   grows much. */
+@media (max-width: 510px) {
+  .guest__heading-meta {
+    margin-top: 0.75rem;
+    margin-left: 0;
+    text-align: left;
+  }
 }
 
 @media (max-width: 480px) {
