@@ -149,3 +149,31 @@ var EXHIBITORS = [
     },
   },
 ];
+
+// Fills the exhibitor names into index.html's list. The rows and their links
+// are written out in the markup there — the number of exhibitors is fixed —
+// so all this does is put each name in, matched by the span's data-artist.
+// That keeps a name written down once, here, and reaching both that list and
+// the exhibitor's own page.
+//
+// Lives in this file rather than one of its own because it's a few lines that
+// exist only to serve the data above. artist.html loads this too and has no
+// such list; the query below simply matches nothing there.
+document.addEventListener("DOMContentLoaded", function () {
+  // hiragana/katakana (U+3040-30FF) + CJK ideographs (U+3400-9FFF)
+  var JP_RE = /[぀-ヿ㐀-鿿]/;
+
+  document
+    .querySelectorAll(".exhibitor-card__name[data-artist]")
+    .forEach(function (el) {
+      var artist = EXHIBITORS.find(function (a) {
+        return a.id === el.dataset.artist;
+      });
+      // a row whose id isn't in the data keeps whatever the markup had,
+      // rather than being blanked out
+      if (!artist || !artist.name) return;
+      var name = artist.name.trim();
+      el.textContent = name;
+      if (JP_RE.test(name)) el.lang = "ja";
+    });
+});

@@ -506,28 +506,12 @@ a {
 
 /* not underlined, by request — the colour shift on hover is the only
    affordance marking these two as links */
-.guest__speakers-link,
-.exhibitors__note-link {
+.guest__speakers-link {
   transition: color 0.15s ease;
 }
 
-.guest__speakers-link:hover,
-.exhibitors__note-link:hover {
+.guest__speakers-link:hover {
   color: var(--red);
-}
-
-/* source note under the web, in the same grey as the guest speakers: the
-   threads between the names are a machine's reading of the exhibitors'
-   profiles, and this links to it. Aligned right, opposite the EXHIBITORS
-   heading at the other end of the section. */
-.exhibitors__note {
-  width: 100%;
-  max-width: 70rem;
-  margin: clamp(1.5rem, 4vw, 2.5rem) auto 0;
-  text-align: right;
-  font-size: clamp(0.8rem, 1.6vw, 1rem);
-  line-height: 1.7;
-  color: var(--grey);
 }
 
 .guest__name-row {
@@ -664,22 +648,11 @@ a {
 /* ---------- exhibitors ---------- */
 
 .exhibitors {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
   padding: clamp(3rem, 8vw, 6rem) var(--gap);
   border-top: 1px solid rgba(255, 255, 255, 0.25);
 }
 
 .exhibitors__inner {
-  /* explicit 100% (not the implicit auto every other __inner wrapper relies
-     on): .exhibitors is a flex column now (for .exhibitor-web's flex-grow,
-     see below), and a flex item with auto width AND auto margins resolves
-     to fit-content instead of filling the line — margin:auto disables
-     stretch per spec, leaving only the heading's own (transform-widened)
-     layout width to size against, off-center and too narrow. An explicit
-     width sidesteps that resolution entirely, flex item or not. */
-  width: 100%;
   max-width: 70rem;
   margin: 0 auto;
 }
@@ -697,88 +670,38 @@ a {
   line-height: 1;
 }
 
-/* baseline: a plain wrapped list of names. This is what renders with no JS,
-   under prefers-reduced-motion (js/exhibitor-web.js bails before adding
-   --live), and is what js/exhibitor-web.js measures each link's natural
-   size from before switching it to position: absolute. */
-.exhibitor-web {
+/* two columns of names, each its own ruled row */
+.exhibitor-list {
   list-style: none;
   margin: 0;
   padding: 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem clamp(1.5rem, 4vw, 3rem);
-  /* fills whatever height .exhibitors's own min-height: 100vh leaves after
-     the heading, instead of sizing off its own content or a fixed clamp()
-     — same technique as .hero__art, and for the same reason: a fixed
-     figure tuned for one screen is wrong on every other */
-  flex: 1 1 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 clamp(1.5rem, 4vw, 3rem);
 }
 
-.exhibitor-web__link {
-  display: inline-block;
-  padding: 0.35em 0.5em;
-  font-weight: 500;
+.exhibitor-card {
+  display: block;
+  padding: 1.1rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.25);
   color: var(--white);
-  white-space: nowrap;
-  /* same size as .guest__name, so the two name treatments read as a pair */
-  font-size: clamp(1.4rem, 3.2vw, 2rem);
-  transition: color 0.15s ease;
+  transition:
+    color 0.15s ease,
+    padding-left 0.15s ease;
 }
 
-/* desktop: names with a space stay one line — the <br> js/exhibitor-web.js
-   always inserts for these is switched on only in the mobile media query */
-.exhibitor-web__break {
-  display: none;
-}
-
-.exhibitor-web__link:hover,
-.exhibitor-web__link:focus-visible {
+.exhibitor-card:hover,
+.exhibitor-card:focus-visible {
   color: var(--red);
+  padding-left: 0.5rem;
 }
 
-/* enhanced mode (js/exhibitor-web.js): a bounded box the names float
-   around inside, each positioned via transform: translate() every frame.
-   Height comes from .exhibitor-web's own flex-grow above; min-height is
-   just a floor for pathologically short viewports. */
-.exhibitor-web--live {
-  position: relative;
-  min-height: 18rem;
-  overflow: hidden;
-}
-
-.exhibitor-web--live .exhibitor-web__item {
-  position: absolute;
-  top: 0;
-  left: 0;
-  /* js sets the real position on first frame; start off the visible edge
-     instead of stacked at (0,0) so there's no flash before that */
-  transform: translate(-9999px, -9999px);
-}
-
-.exhibitor-web--live .exhibitor-web__link {
-  cursor: grab;
-  /* dragging is press-and-move, not a touch scroll gesture */
-  touch-action: none;
-}
-
-.exhibitor-web__item.is-dragging {
-  /* picked-up name paints above its neighbors instead of possibly under them */
-  z-index: 1;
-}
-
-.exhibitor-web__item.is-dragging .exhibitor-web__link {
-  cursor: grabbing;
-}
-
-/* nearest-neighbor lines, redrawn every frame to track the floating names.
-   Sits behind the <li> links in paint order (inserted as the first child) */
-.exhibitor-web__lines {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
+/* the same clamp as .guest__name, so the exhibitors and the guest read as
+   the same kind of name at the same weight in the hierarchy */
+.exhibitor-card__name {
+  font-weight: 500;
+  font-size: clamp(1.4rem, 3.2vw, 2rem);
+  line-height: 1.4;
 }
 
 /* ---------- footer (visit info + closing marquee) ---------- */
@@ -1343,17 +1266,9 @@ a {
     align-self: start;
   }
 
-  /* names with a space break to two lines here (js/exhibitor-web.js always
-     inserts a <br>; .exhibitor-web__break above hides it outside this query,
-     this turns it back on), skipping 莉山 (A) per its own exception even
-     though its name also has a space. Centered since the two lines are
-     rarely equal width. */
-  .exhibitor-web__break {
-    display: inline;
-  }
-
-  .exhibitor-web__link--breakable {
-    text-align: center;
+  /* one column — two columns of names leaves each too narrow to read here */
+  .exhibitor-list {
+    grid-template-columns: 1fr;
   }
 
   /* removed: display: block; overflow-x: auto — that took the table out

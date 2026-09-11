@@ -177,33 +177,76 @@
       <section id="exhibitors" class="exhibitors">
         <div class="exhibitors__inner">
           <h2 class="section-heading">EXHIBITORS</h2>
+
+          <!-- The rows and their links are plain markup: there are ten
+               exhibitors and that number isn't going to change. Only the
+               names are filled in, from EXHIBITORS in
+               js/exhibitors-data.js matched on data-artist, so the names
+               themselves still have a single source of truth shared with
+               artist.html. -->
+          <ul class="exhibitor-list">
+            <li>
+              <a class="exhibitor-card" href="artist.html?id=artist-01">
+                <span class="exhibitor-card__name" data-artist="artist-01"
+                ></span>
+              </a>
+            </li>
+            <li>
+              <a class="exhibitor-card" href="artist.html?id=artist-02">
+                <span class="exhibitor-card__name" data-artist="artist-02"
+                ></span>
+              </a>
+            </li>
+            <li>
+              <a class="exhibitor-card" href="artist.html?id=artist-03">
+                <span class="exhibitor-card__name" data-artist="artist-03"
+                ></span>
+              </a>
+            </li>
+            <li>
+              <a class="exhibitor-card" href="artist.html?id=artist-04">
+                <span class="exhibitor-card__name" data-artist="artist-04"
+                ></span>
+              </a>
+            </li>
+            <li>
+              <a class="exhibitor-card" href="artist.html?id=artist-05">
+                <span class="exhibitor-card__name" data-artist="artist-05"
+                ></span>
+              </a>
+            </li>
+            <li>
+              <a class="exhibitor-card" href="artist.html?id=artist-06">
+                <span class="exhibitor-card__name" data-artist="artist-06"
+                ></span>
+              </a>
+            </li>
+            <li>
+              <a class="exhibitor-card" href="artist.html?id=artist-07">
+                <span class="exhibitor-card__name" data-artist="artist-07"
+                ></span>
+              </a>
+            </li>
+            <li>
+              <a class="exhibitor-card" href="artist.html?id=artist-08">
+                <span class="exhibitor-card__name" data-artist="artist-08"
+                ></span>
+              </a>
+            </li>
+            <li>
+              <a class="exhibitor-card" href="artist.html?id=artist-09">
+                <span class="exhibitor-card__name" data-artist="artist-09"
+                ></span>
+              </a>
+            </li>
+            <li>
+              <a class="exhibitor-card" href="artist.html?id=artist-10">
+                <span class="exhibitor-card__name" data-artist="artist-10"
+                ></span>
+              </a>
+            </li>
+          </ul>
         </div>
-
-        <!-- a sibling of .exhibitors__inner (not nested in it) so its drag/
-             float bounds span the full section width, not just the inner
-             column — same full-bleed pattern as .footer__marquee below
-             .footer__inner. Populated from EXHIBITORS by js/exhibitor-web.js:
-             names float and drift, joined by a fixed set of threads standing
-             for what they share. Falls back to a plain wrapped list under
-             prefers-reduced-motion (see .exhibitor-web in css/style.css) —
-             that fallback still reads as part of this section visually
-             thanks to shared padding, even though it's not in .exhibitors__inner. -->
-        <ul class="exhibitor-web" id="exhibitorWeb"></ul>
-
-        <!-- credits where the lines came from: the threads between the names
-             are a reading of the exhibitors' profiles made by a machine, on a
-             page about people and machines remaking each other. Kept to a
-             footnote — it's a source note, not part of the work. -->
-        <p class="exhibitors__note">
-          <a
-            href="https://claude.ai/share/809494cc-ac5f-4168-a253-c4a9963f9916"
-            class="exhibitors__note-link"
-            target="_blank"
-            rel="noopener noreferrer"
-            lang="ja"
-            >※出展者のプロフィール分析による関係図</a
-          >
-        </p>
       </section>
 
       <section id="guest" class="guest">
@@ -387,7 +430,6 @@
     </main>
 
     <script src="js/exhibitors-data.js"></script>
-    <script src="js/exhibitor-web.js"></script>
     <script src="js/script.js"></script>
     <!--
     Presence ping for one of the artworks, currently left unimplemented 
